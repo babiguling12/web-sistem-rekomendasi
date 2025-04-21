@@ -48,7 +48,7 @@ export default function Home() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight drop-shadow-md">
                 Temukan Destinasi Wisata Alam Bali yang Sesuai Untukmu
               </h1>
-              <p className="text-lg text-gray-100 md:text-xl text-muted-foreground max-w-[700px]">
+              <p className="text-lg text-white md:text-xl text-muted-foreground max-w-[700px]">
                 Sistem rekomendasi cerdas yang membantu menemukan tempat wisata alam di Pulau Bali berdasarkan
                 preferensi dan kondisi terkini.
               </p>
