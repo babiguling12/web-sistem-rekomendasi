@@ -16,7 +16,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-4">
-            <nav className="flex items-center space-x-2">
+            <nav className="flex items-center space-x-8">
               <Link href="/about" className="text-sm font-medium transition-colors hover:text-emerald-600">
                 Tentang
               </Link>
@@ -26,9 +26,6 @@ export default function Home() {
               <Link href="/contact" className="text-sm font-medium transition-colors hover:text-emerald-600">
                 Kontak
               </Link>
-              <Button variant="default" className="bg-emerald-600 hover:bg-emerald-700">
-                Masuk
-              </Button>
             </nav>
           </div>
         </div>
@@ -39,19 +36,19 @@ export default function Home() {
         <section className="relative">
           <div className="absolute inset-0 z-0">
             <Image
-              src="/placeholder.svg?height=600&width=1600"
+              src="/images/bali-landing.jpg"
               alt="Pemandangan Bali"
               fill
-              className="object-cover opacity-20"
+              className="object-cover brightness-80"
               priority
             />
           </div>
           <div className="container relative z-10 py-24 md:py-32 lg:py-40">
             <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight drop-shadow-md">
                 Temukan Destinasi Wisata Alam Bali yang Sesuai Untukmu
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-[700px]">
+              <p className="text-lg text-gray-100 md:text-xl text-muted-foreground max-w-[700px]">
                 Sistem rekomendasi cerdas yang membantu menemukan tempat wisata alam di Pulau Bali berdasarkan
                 preferensi dan kondisi terkini.
               </p>
@@ -105,7 +102,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* How It Works Section */}
+        {/* Process Section */}
         <section className="bg-emerald-50 py-16 md:py-24">
           <div className="container">
             <div className="text-center mb-12">
@@ -151,12 +148,14 @@ export default function Home() {
                 </ol>
               </div>
               <div className="relative h-80 md:h-96">
-                <Image
-                  src="/placeholder.svg?height=400&width=600&text=Genetic%20Algorithm%20Visualization"
-                  alt="Visualisasi Algoritma Genetika"
-                  fill
-                  className="object-contain rounded-lg"
-                />
+              <video
+                src="/images/ai_tr.webm"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-contain"
+              />
               </div>
             </div>
           </div>
@@ -176,56 +175,11 @@ export default function Home() {
             </div>
             <div className="relative w-full max-w-md aspect-video rounded-lg overflow-hidden">
               <Image
-                src="/placeholder.svg?height=300&width=500"
+                src="/images/icon-wisata.webp"
                 alt="Destinasi Wisata Bali"
                 fill
-                className="object-cover"
+                className="object-center object-contain scale-110"
               />
-            </div>
-          </div>
-        </section>
-
-        {/* Chatbot Preview */}
-        <section className="bg-emerald-50 py-16 md:py-24">
-          <div className="container">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tighter mb-4">Asisten Virtual Wisata</h2>
-              <p className="text-muted-foreground max-w-[700px] mx-auto">
-                Tanyakan kepada asisten virtual kami untuk mendapatkan informasi lebih lanjut tentang destinasi wisata
-                di Bali.
-              </p>
-            </div>
-
-            <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden border">
-              <div className="bg-emerald-600 text-white p-4">
-                <h3 className="font-bold">Asisten WisataBali</h3>
-              </div>
-              <div className="p-4 h-64 overflow-y-auto bg-gray-50">
-                <div className="flex flex-col space-y-3">
-                  <div className="bg-emerald-100 rounded-lg p-3 max-w-[80%]">
-                    <p className="text-sm">
-                      Halo! Saya asisten virtual WisataBali. Ada yang bisa saya bantu tentang wisata di Bali?
-                    </p>
-                  </div>
-                  <div className="bg-gray-200 rounded-lg p-3 max-w-[80%] self-end">
-                    <p className="text-sm">Rekomendasi tempat wisata di Ubud?</p>
-                  </div>
-                  <div className="bg-emerald-100 rounded-lg p-3 max-w-[80%]">
-                    <p className="text-sm">
-                      Ubud memiliki banyak tempat wisata menarik seperti Monkey Forest, Tegalalang Rice Terrace, dan Goa
-                      Gajah. Mau tahu lebih detail tentang salah satu tempat?
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 border-t flex">
-                <input
-                  type="text"
-                  placeholder="Ketik pertanyaan Anda..."
-                  className="flex-1 p-2 border rounded-l-md focus:outline-none focus:ring-1 focus:ring-emerald-600"
-                />
-                <button className="bg-emerald-600 text-white px-4 py-2 rounded-r-md hover:bg-emerald-700">Kirim</button>
-              </div>
             </div>
           </div>
         </section>

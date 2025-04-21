@@ -9,15 +9,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { MapPin, Clock, Activity, ArrowLeft, Loader2 } from "lucide-react"
+import { Clock, Activity, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 export default function RecommendationPage() {
   const router = useRouter()
-  const [location, setLocation] = useState("")
-  const [isLocating, setIsLocating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null)
 
   // Form state
   const [district, setDistrict] = useState("")
@@ -25,64 +22,26 @@ export default function RecommendationPage() {
   const [timeOfDay, setTimeOfDay] = useState("morning")
   const [activityLevel, setActivityLevel] = useState("relaxed")
 
-  const handleGetLocation = () => {
-    setIsLocating(true)
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude
-          const lng = position.coords.longitude
-          setCoordinates({ lat, lng })
-          setLocation("Lokasi terdeteksi")
-          setIsLocating(false)
-        },
-        (error) => {
-          console.error("Error getting location:", error)
-          setLocation("")
-          setIsLocating(false)
-        },
-      )
-    } else {
-      alert("Geolocation tidak didukung oleh browser Anda")
-      setIsLocating(false)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    try {
-      // In a real implementation, this would send data to a Python backend
-      // that implements the genetic algorithm
-      const response = await fetch("/api/recommend", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          latitude: coordinates?.lat || -8.65, // Default to Denpasar if not provided
-          longitude: coordinates?.lng || 115.2167,
-          district,
-          terrainType,
-          timeOfDay,
-          activityLevel,
-        }),
-      })
+    // Store form data in session storage for the results page
+    sessionStorage.setItem(
+      "recommendationParams",
+      JSON.stringify({
+        district,
+        terrainType,
+        timeOfDay,
+        activityLevel,
+      }),
+    )
 
-      if (!response.ok) {
-        throw new Error("Failed to get recommendations")
-      }
-
-      // In a real implementation, we would process the response
-      // For now, just redirect to the results page
-      router.push("/results")
-    } catch (error) {
-      console.error("Error submitting form:", error)
-      alert("Terjadi kesalahan saat memproses rekomendasi. Silakan coba lagi.")
-    } finally {
+    // Simulate processing time
+    setTimeout(() => {
       setIsSubmitting(false)
-    }
+      router.push("/results")
+    }, 1500)
   }
 
   return (
@@ -103,25 +62,6 @@ export default function RecommendationPage() {
         <CardContent className="pt-6">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Lokasi Anda</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={handleGetLocation}
-                    disabled={isLocating}
-                  >
-                    <MapPin className="mr-2 h-4 w-4" />
-                    {isLocating ? "Mendeteksi..." : "Deteksi Lokasi Otomatis"}
-                  </Button>
-                  <span className="py-2 px-3 border rounded-md flex-1 bg-muted/50 text-center">
-                    {location || "Lokasi belum terdeteksi"}
-                  </span>
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="district">Kabupaten Tujuan</Label>
                 <Select value={district} onValueChange={setDistrict}>

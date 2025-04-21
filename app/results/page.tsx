@@ -5,10 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MapPin, Activity, Star, ArrowLeft, Share2, Heart, CloudSun } from "lucide-react"
 
-// Mock data for demonstration - in a real app, this would come from the Python backend
+// Static data for demonstration
 const mockResults = [
   {
     id: 1,
@@ -78,13 +77,13 @@ export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // In a real app, this would fetch data from the Python backend
+    // Get stored form data from session storage
     const storedParams = sessionStorage.getItem("recommendationParams")
     if (storedParams) {
       setFormData(JSON.parse(storedParams))
     }
 
-    // Simulate API loading
+    // Simulate loading
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 1000)
@@ -101,24 +100,14 @@ export default function ResultsPage() {
   }
 
   const shareDestination = (name: string) => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: `Rekomendasi Wisata: ${name}`,
-          text: `Saya menemukan destinasi wisata menarik di Bali: ${name}`,
-          url: window.location.href,
-        })
-        .catch((error) => console.log("Error sharing:", error))
-    } else {
-      alert(`Fitur berbagi tidak didukung di browser Anda. Salin link berikut: ${window.location.href}`)
-    }
+    alert(`Fitur berbagi untuk ${name} belum tersedia`)
   }
 
   if (isLoading) {
     return (
       <div className="container py-16 flex flex-col items-center justify-center">
         <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-lg">Memproses rekomendasi dengan algoritma genetika...</p>
+        <p className="mt-4 text-lg">Memuat hasil rekomendasi...</p>
       </div>
     )
   }
@@ -169,80 +158,65 @@ export default function ResultsPage() {
         )}
       </div>
 
-      <Tabs defaultValue="list" className="mb-8">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="list">Daftar</TabsTrigger>
-          <TabsTrigger value="map">Peta</TabsTrigger>
-        </TabsList>
-        <TabsContent value="list" className="space-y-6 mt-6">
-          {mockResults.map((result) => (
-            <Card key={result.id} className="overflow-hidden">
-              <div className="md:flex">
-                <div className="relative h-48 md:h-auto md:w-1/3">
-                  <Image src={result.image || "/placeholder.svg"} alt={result.name} fill className="object-cover" />
+      <div className="space-y-6">
+        {mockResults.map((result) => (
+          <Card key={result.id} className="overflow-hidden">
+            <div className="md:flex">
+              <div className="relative h-48 md:h-auto md:w-1/3">
+                <Image src={result.image || "/placeholder.svg"} alt={result.name} fill className="object-cover" />
+              </div>
+              <CardContent className="p-6 md:w-2/3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl font-bold mb-1">{result.name}</h2>
+                    <div className="flex items-center text-sm text-muted-foreground mb-2">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      <span>
+                        {result.location} • {result.distance}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400 mr-1" />
+                    <span className="font-medium">{result.popularity}</span>
+                  </div>
                 </div>
-                <CardContent className="p-6 md:w-2/3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-xl font-bold mb-1">{result.name}</h2>
-                      <div className="flex items-center text-sm text-muted-foreground mb-2">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        <span>
-                          {result.location} • {result.distance}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400 mr-1" />
-                      <span className="font-medium">{result.popularity}</span>
-                    </div>
-                  </div>
 
-                  <p className="text-sm mb-4">{result.description}</p>
+                <p className="text-sm mb-4">{result.description}</p>
 
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
-                      <CloudSun className="h-3 w-3 mr-1" />
-                      <span>{result.weather}</span>
-                    </div>
-                    <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
-                      <Activity className="h-3 w-3 mr-1" />
-                      <span>{result.activityLevel}</span>
-                    </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
+                    <CloudSun className="h-3 w-3 mr-1" />
+                    <span>{result.weather}</span>
                   </div>
+                  <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
+                    <Activity className="h-3 w-3 mr-1" />
+                    <span>{result.activityLevel}</span>
+                  </div>
+                </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={favorites.includes(result.id) ? "text-red-500" : ""}
-                      onClick={() => toggleFavorite(result.id)}
-                    >
-                      <Heart className={`h-4 w-4 mr-2 ${favorites.includes(result.id) ? "fill-red-500" : ""}`} />
-                      {favorites.includes(result.id) ? "Favorit" : "Tambah ke Favorit"}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => shareDestination(result.name)}>
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Bagikan
-                    </Button>
-                  </div>
-                </CardContent>
-              </div>
-            </Card>
-          ))}
-        </TabsContent>
-        <TabsContent value="map" className="mt-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="aspect-video bg-muted rounded-md flex items-center justify-center">
-                <p className="text-muted-foreground">Peta interaktif akan ditampilkan di sini</p>
-              </div>
-            </CardContent>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={favorites.includes(result.id) ? "text-red-500" : ""}
+                    onClick={() => toggleFavorite(result.id)}
+                  >
+                    <Heart className={`h-4 w-4 mr-2 ${favorites.includes(result.id) ? "fill-red-500" : ""}`} />
+                    {favorites.includes(result.id) ? "Favorit" : "Tambah ke Favorit"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => shareDestination(result.name)}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Bagikan
+                  </Button>
+                </div>
+              </CardContent>
+            </div>
           </Card>
-        </TabsContent>
-      </Tabs>
+        ))}
+      </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-8">
         <Button variant="outline" className="mr-4">
           <Link href="/recommendation" className="flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
