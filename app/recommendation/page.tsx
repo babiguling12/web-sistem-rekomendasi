@@ -9,18 +9,45 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Clock, Activity, ArrowLeft, Loader2 } from "lucide-react"
+import { Clock, Activity, ArrowLeft, Loader2, MapPin } from "lucide-react"
 import Link from "next/link"
+
 
 export default function RecommendationPage() {
   const router = useRouter()
+  // const [location, setLocation] = useState("")
+  const [isLocating, setIsLocating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null)
 
   // Form state
   const [district, setDistrict] = useState("")
   const [terrainType, setTerrainType] = useState("highland")
   const [timeOfDay, setTimeOfDay] = useState("morning")
   const [activityLevel, setActivityLevel] = useState("relaxed")
+
+  const handleGetLocation = () => {
+    setIsLocating(true)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude
+          const lng = position.coords.longitude
+          setCoordinates({ lat, lng })
+          // setLocation("Lokasi terdeteksi")
+          setIsLocating(false)
+        },
+        (error) => {
+          console.error("Error getting location:", error)
+          // setLocation("")
+          setIsLocating(false)
+        },
+      )
+    } else {
+      alert("Geolocation tidak didukung oleh browser Anda")
+      setIsLocating(false)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,6 +89,30 @@ export default function RecommendationPage() {
         <CardContent className="pt-6">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Lokasi Anda</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleGetLocation}
+                    disabled={isLocating}
+                  >
+                    <MapPin className="mr-1 h-4 w-4" />
+                    {isLocating ? 'Mencari lokasi...' : 'Deteksi lokasi Otomatis'}
+                  </Button>
+                  {coordinates ? (
+                    <span className="py-2 px-3 border rounded-md flex-1 bg-muted/50 text-center">
+                      Lat: {coordinates.lat}, Lng: {coordinates.lng}
+                    </span>
+                  ) : (
+                    <span className="py-2 px-3 border rounded-md flex-1 bg-muted/50 text-center">
+                      Lokasi tidak terdeteksi
+                    </span>
+                  )}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="district">Kabupaten Tujuan</Label>
                 <Select value={district} onValueChange={setDistrict}>
@@ -130,7 +181,7 @@ export default function RecommendationPage() {
                     </svg>
                     <div className="text-center">
                       <span className="block font-medium">Dataran Rendah</span>
-                      <span className="block text-xs text-muted-foreground">Pantai, Hutan</span>
+                      <span className="block text-xs text-muted-foreground">Hutan, Taman, Kebun</span>
                     </div>
                   </Label>
                   <Label
@@ -155,7 +206,7 @@ export default function RecommendationPage() {
                     </svg>
                     <div className="text-center">
                       <span className="block font-medium">Perairan</span>
-                      <span className="block text-xs text-muted-foreground">Air Terjun, Danau</span>
+                      <span className="block text-xs text-muted-foreground">Air Terjun, Danau, Pantai</span>
                     </div>
                   </Label>
                 </RadioGroup>
@@ -209,6 +260,7 @@ export default function RecommendationPage() {
                     <RadioGroupItem value="relaxed" id="relaxed" className="sr-only" />
                     <Activity className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Santai</span>
+                    <span className="block text-xs text-muted-foreground text-center">Cocok untuk yang ingin menikmati alam tanpa banyak bergerak</span>
                   </Label>
                   <Label
                     htmlFor="moderate"
@@ -217,6 +269,7 @@ export default function RecommendationPage() {
                     <RadioGroupItem value="moderate" id="moderate" className="sr-only" />
                     <Activity className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Sedang</span>
+                    <span className="block text-xs text-muted-foreground text-center mt-1">Butuh sedikit tenaga tapi tetap nyaman. Cocok buat keluarga muda atau traveler biasa.</span>
                   </Label>
                   <Label
                     htmlFor="extreme"
@@ -225,6 +278,7 @@ export default function RecommendationPage() {
                     <RadioGroupItem value="extreme" id="extreme" className="sr-only" />
                     <Activity className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Ekstrem</span>
+                    <span className="block text-xs text-muted-foreground text-center mt-1">Butuh stamina dan kesiapan fisik. Biasanya untuk pecinta petualangan.</span>
                   </Label>
                 </RadioGroup>
               </div>
