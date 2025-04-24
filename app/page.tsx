@@ -246,8 +246,8 @@ export default function Home() {
             <div>
               <h3 className="font-medium mb-4">Kontak</h3>
               <ul className="space-y-2 text-sm">
-                <li className="text-muted-foreground">Email: info@wisatabali.com</li>
-                <li className="text-muted-foreground">Telepon: +62 123 4567 890</li>
+                <li className="text-muted-foreground">Email: payumelali@gmail.com</li>
+                <li className="text-muted-foreground">Telepon: +62 123 4567 8910</li>
               </ul>
             </div>
           </div>
