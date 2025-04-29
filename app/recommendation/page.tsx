@@ -9,7 +9,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Clock, Activity, ArrowLeft, Loader2, MapPin } from "lucide-react"
+import { Clock, Activity, ArrowLeft, Loader2, MapPin, Sun, Compass, Moon, Sunrise, Sunset } from "lucide-react"
+import {FaUmbrellaBeach} from "react-icons/fa"
+import {GiHiking, GiMountaintop} from "react-icons/gi"
 import Link from "next/link"
 
 
@@ -72,23 +74,54 @@ export default function RecommendationPage() {
   }
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto">
-      <Link href="/" className="flex items-center text-sm mb-8 hover:text-emerald-600">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Kembali ke Beranda
-      </Link>
+    <div className="min-h-screen bg-[#f8f5f2] relative overflow-hidden">
+    {/* Decorative Elements */}
+    <div className="absolute top-10 right-10 w-64 h-64 -translate-y-1/4 translate-x-1/4">
+      <div className="w-full h-full rounded-full bg-[#f9c06a] opacity-20"></div>
+    </div>
+    <div className="absolute bottom-10 right-10 w-64 h-64 -translate-y-1/4 translate-x-1/4">
+      <div className="w-full h-full rounded-full bg-[#f9c06a] opacity-20"></div>
+    </div>
+    <div className="absolute bottom-10 left-10 w-80 h-80 translate-y-1/3 -translate-x-1/3">
+      <div className="w-full h-full rounded-full bg-[#4dab9a] opacity-10"></div>
+    </div>
+    <div className="absolute top-0 left-80 w-80 h-80 translate-y-1/3 -translate-x-1/3">
+      <div className="w-full h-full rounded-full bg-[#4dab9a] opacity-10"></div>
+    </div>
+    <div className="absolute top-48 right-48 w-64 h-64 translate-y-1/3 -translate-x-1/3">
+      <div className="w-full h-full rounded-full bg-[#f43f5e] opacity-10"></div>
+    </div>
 
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tighter mb-2">Cari Rekomendasi Wisata</h1>
-        <p className="text-muted-foreground">
-          Isi preferensi wisata Anda untuk mendapatkan rekomendasi destinasi terbaik
+    {/* Dekorasi INCOMING */}
+    
+
+
+    <div className="container py-12 max-w-4xl mx-auto relative z-10">
+        <Link href="/" className="flex items-center text-sm mb-8 hover:text-emerald-600 transition-colors">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Kembali ke Beranda
+        </Link>
+
+      <div className="text-center mb-10">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3 text-gray-800">Temukan Wisata Impianmu</h1>
+        <p className="text-gray-600 max-w-lg mx-auto">
+          Isi preferensi wisata Anda untuk mendapatkan rekomendasi destinasi terbaik yang sesuai dengan keinginan Anda
         </p>
       </div>
 
-      <Card>
+      <Card className="border-none shadow-lg rounded-2xl overflow-hidden bg-white/90 backdrop-blur-sm">
+      <div className="bg-gradient-to-r from-emerald-600/90 to-teal-500/90 p-6 text-white">
+            <h2 className="text-xl font-semibold flex items-center">
+              <Compass className="mr-2 h-5 w-5" />
+              Preferensi Perjalanan
+            </h2>
+            <p className="text-white/80 text-sm mt-1">
+              Bantu kami menemukan destinasi yang paling sesuai dengan preferensi Anda
+            </p>
+          </div>
         <CardContent className="pt-6">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
+            <div className="space-y-4 ">
               <div className="space-y-2">
                 <Label>Lokasi Anda</Label>
                 <div className="flex gap-2">
@@ -102,21 +135,28 @@ export default function RecommendationPage() {
                     <MapPin className="mr-1 h-4 w-4" />
                     {isLocating ? 'Mencari lokasi...' : 'Deteksi lokasi Otomatis'}
                   </Button>
+                  
                   {coordinates ? (
-                    <span className="py-2 px-3 border rounded-md flex-1 bg-muted/50 text-center">
+                    <span className="py-2 px-3 border rounded-md flex-1 
+                    bg-gradient-to-r from-amber-400/70 to-orange-500/70  text-center">
                       Lat: {coordinates.lat}, Lng: {coordinates.lng}
                     </span>
                   ) : (
-                    <span className="py-2 px-3 border rounded-md flex-1 bg-muted/50 text-center">
+                    <span className="py-2 px-3 border rounded-md flex-1 
+                    bg-gradient-to-l from-red-400/40 to-rose-500/70 text-center ">
                       Lokasi tidak terdeteksi
                     </span>
                   )}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="district">Kabupaten Tujuan</Label>
+                <Label htmlFor="district" className="text-gray-700 font-medium">
+                  Kabupaten Tujuan
+                  </Label>
                 <Select value={district} onValueChange={setDistrict}>
-                  <SelectTrigger id="district">
+                  <SelectTrigger id="district"
+                    className="border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500"
+                  >
                     <SelectValue placeholder="Pilih kabupaten" />
                   </SelectTrigger>
                   <SelectContent>
@@ -142,7 +182,7 @@ export default function RecommendationPage() {
                 >
                   <Label
                     htmlFor="highland"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="highland" id="highland" className="sr-only" />
                     <svg
@@ -164,7 +204,7 @@ export default function RecommendationPage() {
                   </Label>
                   <Label
                     htmlFor="lowland"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="lowland" id="lowland" className="sr-only" />
                     <svg
@@ -186,7 +226,7 @@ export default function RecommendationPage() {
                   </Label>
                   <Label
                     htmlFor="water"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="water" id="water" className="sr-only" />
                     <svg
@@ -221,26 +261,26 @@ export default function RecommendationPage() {
                 >
                   <Label
                     htmlFor="morning"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="morning" id="morning" className="sr-only" />
-                    <Clock className="mb-3 h-6 w-6" />
+                    <Sunrise className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Pagi</span>
                   </Label>
                   <Label
                     htmlFor="afternoon"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="afternoon" id="afternoon" className="sr-only" />
-                    <Clock className="mb-3 h-6 w-6" />
+                    <Sun className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Siang</span>
                   </Label>
                   <Label
                     htmlFor="evening"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="evening" id="evening" className="sr-only" />
-                    <Clock className="mb-3 h-6 w-6" />
+                    <Sunset className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Sore</span>
                   </Label>
                 </RadioGroup>
@@ -255,28 +295,28 @@ export default function RecommendationPage() {
                 >
                   <Label
                     htmlFor="relaxed"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="relaxed" id="relaxed" className="sr-only" />
-                    <Activity className="mb-3 h-6 w-6" />
+                    <FaUmbrellaBeach className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Santai</span>
                     <span className="block text-xs text-muted-foreground text-center">Cocok untuk yang ingin menikmati alam tanpa banyak bergerak</span>
                   </Label>
                   <Label
                     htmlFor="moderate"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="moderate" id="moderate" className="sr-only" />
-                    <Activity className="mb-3 h-6 w-6" />
+                    <GiHiking className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Sedang</span>
                     <span className="block text-xs text-muted-foreground text-center mt-1">Butuh sedikit tenaga tapi tetap nyaman. Cocok buat keluarga muda atau traveler biasa.</span>
                   </Label>
                   <Label
                     htmlFor="extreme"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-emerald-600"
+                    className="flex flex-col items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 hover:border-emerald-200 transition-all [&:has([data-state=checked])]:border-emerald-500 [&:has([data-state=checked])]:bg-emerald-50"
                   >
                     <RadioGroupItem value="extreme" id="extreme" className="sr-only" />
-                    <Activity className="mb-3 h-6 w-6" />
+                    <GiMountaintop className="mb-3 h-6 w-6" />
                     <span className="block font-medium">Ekstrem</span>
                     <span className="block text-xs text-muted-foreground text-center mt-1">Butuh stamina dan kesiapan fisik. Biasanya untuk pecinta petualangan.</span>
                   </Label>
@@ -297,6 +337,7 @@ export default function RecommendationPage() {
           </form>
         </CardContent>
       </Card>
+    </div>
     </div>
   )
 }
