@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "WisataBali - Sistem Rekomendasi Destinasi Wisata Alam di Pulau Bali",
+  title: "PayuMelali - Sistem Rekomendasi Destinasi Wisata Alam di Pulau Bali",
   description: "Sistem rekomendasi destinasi wisata alam di Pulau Bali berbasis web menggunakan algoritma genetika",
 }
 

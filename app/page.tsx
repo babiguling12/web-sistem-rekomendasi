@@ -12,7 +12,7 @@ export default function Home() {
           <div className="mr-4 flex">
             <Link href="/" className="flex items-center space-x-2">
               <MapPin className="h-6 w-6 text-emerald-600" />
-              <span className="font-bold text-xl">WisataBali</span>
+              <span className="font-bold text-xl">PayuMelali</span>
             </Link>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-4">
@@ -45,10 +45,12 @@ export default function Home() {
           </div>
           <div className="container relative z-10 py-24 md:py-32 lg:py-40">
             <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight drop-shadow-md">
+              <h1
+                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-tight drop-shadow-md"
+                style={{ textShadow: "1px" }}>
                 Temukan Destinasi Wisata Alam Bali yang Sesuai Untukmu
               </h1>
-              <p className="text-lg text-white md:text-xl text-muted-foreground max-w-[700px]">
+              <p className="text-lg text-white md:text-2xl max-w-[700px] text-center" style={{ textShadow: "2px 2px 4px black" }}>
                 Sistem rekomendasi cerdas yang membantu menemukan tempat wisata alam di Pulau Bali berdasarkan
                 preferensi dan kondisi terkini.
               </p>
@@ -192,7 +194,7 @@ export default function Home() {
             <div>
               <Link href="/" className="flex items-center space-x-2">
                 <MapPin className="h-5 w-5 text-emerald-600" />
-                <span className="font-bold">WisataBali</span>
+                <span className="font-bold">PayuMelali</span>
               </Link>
               <p className="mt-4 text-sm text-muted-foreground">
                 Sistem Rekomendasi Destinasi Wisata Alam di Pulau Bali Berbasis Web Menggunakan Algoritma Genetika
@@ -252,7 +254,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} WisataBali. Hak Cipta Dilindungi.</p>
+            <p>&copy; {new Date().getFullYear()} PayuMelali. Hak Cipta Dilindungi.</p>
           </div>
         </div>
       </footer>
