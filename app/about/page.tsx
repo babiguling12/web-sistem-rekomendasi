@@ -19,51 +19,51 @@ const teamMembers: TeamMember[] = [
     id: 1,
     name: "King Gustos",
     role: "Ketua Tim",
-    bio: "Budi adalah ketua tim yang bertanggung jawab untuk koordinasi proyek. Dia memiliki pengalaman dalam pengembangan web dan manajemen proyek.",
+    bio: "Gustu adalah KING, King memimpin perkumpulan meja bundar.",
     imageUrl: "/images/King-profile.png?height=300&width=300&text=Gustos",
   },
   {
     id: 2,
     name: "Bintang BoB",
     role: "UI/UX Designer",
-    bio: "Ani adalah desainer UI/UX yang bertanggung jawab untuk tampilan dan pengalaman pengguna. Dia memiliki keahlian dalam desain grafis dan interaksi pengguna.",
+    bio: "Bintang adalah .",
     imageUrl: "/images/bob-profile.png?height=300&width=300&text=BoB",
   },
   {
     id: 3,
     name: "Santos",
     role: "Frontend Developer",
-    bio: "Citra adalah pengembang frontend yang bertanggung jawab untuk implementasi antarmuka pengguna. Dia ahli dalam HTML, CSS, dan JavaScript.",
+    bio: "Santos adalah .",
     imageUrl: "/images/sans-profile.png?height=300&width=300&text=Citra",
   },
   {
     id: 4,
     name: "Dwikszu",
     role: "Backend Developer",
-    bio: "Dodi adalah pengembang backend yang bertanggung jawab untuk logika server dan database. Dia memiliki keahlian dalam Node.js dan database.",
+    bio: "Dwik adalah .",
     imageUrl: "/images/dwikz-profile.png?height=300&width=300&text=Dodi",
   },
   {
     id: 5,
     name: "Adittt",
     role: "G.O.A.T",
-    bio: "Eka adalah penulis konten yang bertanggung jawab untuk semua teks dan konten di website. Dia memiliki latar belakang dalam jurnalisme dan komunikasi.",
+    bio: "Adit adalah .",
     imageUrl: "/images/aditt-profile.png?height=300&width=300&text=Eka",
   },
 ]
 
 export default function AboutPage() {
-  // State untuk menyimpan anggota tim yang dipilih dan status popup
+  // state utk menyimpan anggota tim yang dipilih dan status popup
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
 
-  // Fungsi untuk menampilkan popup dengan detail anggota
+  // func utk open popup dengan detail anggota
   const showMemberDetails = (member: TeamMember) => {
     setSelectedMember(member)
     setIsPopupOpen(true)
   }
 
-  // Fungsi untuk menutup popup
+  // func utk close popup
   const closePopup = () => {
     setIsPopupOpen(false)
   }
@@ -107,7 +107,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* Kartu Anggota Tim - dengan grid yang dimodifikasi */}
+        {/* Card Anggota Tim - dengan grid yang dimodifikasi */}
         <div className="flex flex-wrap justify-center max-w-5xl mx-auto">
           {teamMembers.map((member) => (
             <div

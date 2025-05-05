@@ -1,9 +1,20 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, MapPin, Sun, Activity } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { use, useEffect } from "react"
+import AOS from 'aos'
+import "aos/dist/aos.css"
+import aos from 'aos';
 
 export default function Home() {
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+    })
+  }, [])
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -33,10 +44,10 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative">
+        <section className="relative aspect-auto">
           <div className="absolute inset-0 z-0">
             <Image
-              src="/images/bali-landing.jpg"
+              src="/images/landing-opt3.jpg"
               alt="Pemandangan Bali"
               fill
               className="object-cover brightness-80"
@@ -50,7 +61,7 @@ export default function Home() {
                 style={{ textShadow: "1px" }}>
                 Temukan Destinasi Wisata Alam Bali yang Sesuai Untukmu
               </h1>
-              <p className="text-lg text-white md:text-2xl max-w-[700px] text-center" style={{ textShadow: "2px 2px 4px black" }}>
+              <p className="text-lg text-white md:text-3xl max-w-[700px] text-center" style={{ textShadow: "2px 2px 4px black" }}>
                 Sistem rekomendasi cerdas yang membantu menemukan tempat wisata alam di Pulau Bali berdasarkan
                 preferensi dan kondisi terkini.
               </p>
@@ -72,7 +83,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center p-6 border rounded-lg bg-card">
+            <div className="flex flex-col items-center text-center p-6 border rounded-lg bg-card" data-aos="fade-right">
               <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
                 <MapPin className="h-6 w-6 text-emerald-600" />
               </div>
@@ -82,9 +93,9 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-6 border rounded-lg bg-card">
+            <div className="flex flex-col items-center text-center p-6 border rounded-lg bg-card" data-aos="fade-up">
               <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
-                <Sun className="h-6 w-6 text-emerald-600" />
+                <Sun className="h-6 w-6 text-amber-500" />
               </div>
               <h3 className="text-xl font-bold mb-2">Analisis Cuaca</h3>
               <p className="text-muted-foreground">
@@ -92,9 +103,9 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center p-6 border rounded-lg bg-card">
+            <div className="flex flex-col items-center text-center p-6 border rounded-lg bg-card" data-aos="fade-left">
               <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
-                <Activity className="h-6 w-6 text-emerald-600" />
+                <Activity className="h-6 w-6 text-blue-500" />
               </div>
               <h3 className="text-xl font-bold mb-2">Algoritma Genetika</h3>
               <p className="text-muted-foreground">
@@ -117,7 +128,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
-                <ol className="relative border-l border-emerald-600 ml-3">
+                <ol className="relative border-l border-emerald-600 ml-3" data-aos="fade-up">
                   {[
                     {
                       title: "Pengumpulan Data",
@@ -139,8 +150,12 @@ export default function Home() {
                         "Hasil rekomendasi ditampilkan kepada pengguna berdasarkan kesesuaian dengan preferensi.",
                     },
                   ].map((step, index) => (
-                    <li key={index} className="mb-10 ml-6">
-                      <span className="absolute flex items-center justify-center w-8 h-8 bg-emerald-600 rounded-full -left-4 text-white">
+                    <li key={index} 
+                    className="mb-10 ml-6"
+                    data-aos="fade-up"
+                    data-aos-delay={'${index * 200}'}
+                    data-aos-duration="800">
+                      <span className="absolute flex items-center justify-center w-8 h-8 bg-emerald-600 rounded-full -left-10 text-white">
                         {index + 1}
                       </span>
                       <h3 className="font-bold text-lg mb-1">{step.title}</h3>
@@ -165,7 +180,7 @@ export default function Home() {
 
         {/* CTA Section */}
         <section className="container py-16 md:py-24">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8" data-aos="fade-up">
             <div className="max-w-md">
               <h2 className="text-3xl font-bold tracking-tighter mb-4">Siap Menemukan Destinasi Wisata Impianmu?</h2>
               <p className="text-muted-foreground mb-6">
