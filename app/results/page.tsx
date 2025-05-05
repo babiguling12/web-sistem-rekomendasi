@@ -73,7 +73,14 @@ const mockResults = [
 
 export default function ResultsPage() {
   const [favorites, setFavorites] = useState<number[]>([])
-  const [formData, setFormData] = useState(null)
+  interface FormData {
+    district?: string
+    terrainType?: string
+    timeOfDay?: string
+    activityLevel?: string
+  }
+
+  const [formData, setFormData] = useState<FormData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
