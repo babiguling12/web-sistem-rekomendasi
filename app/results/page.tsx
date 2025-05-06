@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Activity, Star, ArrowLeft, Share2, Heart, CloudSun } from "lucide-react"
 
-// Static data for demonstration
+// Static data untuk demo
 const mockResults = [
   {
     id: 1,
@@ -72,7 +72,6 @@ const mockResults = [
 ]
 
 export default function ResultsPage() {
-  const [favorites, setFavorites] = useState<number[]>([])
   interface FormData {
     district?: string
     terrainType?: string
@@ -84,31 +83,19 @@ export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Get stored form data from session storage
+    // Ambil data dari session storage
     const storedParams = sessionStorage.getItem("recommendationParams")
     if (storedParams) {
       setFormData(JSON.parse(storedParams))
     }
 
-    // Simulate loading
+    // Anggep ja loading
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 1000)
 
     return () => clearTimeout(timer)
   }, [])
-
-  const toggleFavorite = (id: number) => {
-    if (favorites.includes(id)) {
-      setFavorites(favorites.filter((favId) => favId !== id))
-    } else {
-      setFavorites([...favorites, id])
-    }
-  }
-
-  const shareDestination = (name: string) => {
-    alert(`Fitur berbagi untuk ${name} belum tersedia`)
-  }
 
   if (isLoading) {
     return (
@@ -202,35 +189,19 @@ export default function ResultsPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={favorites.includes(result.id) ? "text-red-500" : ""}
-                    onClick={() => toggleFavorite(result.id)}
-                  >
-                    <Heart className={`h-4 w-4 mr-2 ${favorites.includes(result.id) ? "fill-red-500" : ""}`} />
-                    {favorites.includes(result.id) ? "Favorit" : "Tambah ke Favorit"}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => shareDestination(result.name)}>
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Bagikan
-                  </Button>
-                </div>
               </CardContent>
             </div>
           </Card>
         ))}
       </div>
 
-      <div className="flex justify-center mt-8">
+      <div className="flex justify-start mt-8">
         <Button variant="outline" className="mr-4">
           <Link href="/recommendation" className="flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Ubah Preferensi
           </Link>
         </Button>
-        <Button className="bg-emerald-600 hover:bg-emerald-700">Simpan Hasil</Button>
       </div>
     </div>
   )
