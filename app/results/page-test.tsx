@@ -15,13 +15,14 @@ interface FormData {
   terrainType?: string;
   timeOfDay?: string;
   activityLevel?: string;
-  coordinates?: { lat: number; lng: number };
+  coordinates: { lat: number; lng: number } 
 }
 
 export default function ResultsPage() {
   const [formData, setFormData] = useState<FormData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [places, setPlaces] = useState<any[]>([]);
+  
 
   useEffect(() => {
     const storedParams = sessionStorage.getItem('recommendationParams');
@@ -43,8 +44,7 @@ export default function ResultsPage() {
   }, []);
 
   async function fetchPlaces(params: FormData) {
-    const lat = params.coordinates.lat;
-    const lng = params.coordinates.lng;
+    const { lat, lng } = params.coordinates;
     const radius = 20000; // 20 km dari user
     const center = `${lng},${lat}`;
     const filter = `circle:${center},${radius}`;
