@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { use, useEffect } from "react"
 import AOS from 'aos'
 import "aos/dist/aos.css"
-import aos from 'aos';
 
 export default function Home() {
   useEffect(() => {
@@ -33,9 +32,6 @@ export default function Home() {
               </Link>
               <Link href="/destinations" className="text-sm font-medium transition-colors hover:text-emerald-600">
                 Destinasi
-              </Link>
-              <Link href="/contact" className="text-sm font-medium transition-colors hover:text-emerald-600">
-                Kontak
               </Link>
             </nav>
           </div>
@@ -231,11 +227,6 @@ export default function Home() {
                 <li>
                   <Link href="/destinations" className="text-muted-foreground hover:text-emerald-600">
                     Destinasi
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="text-muted-foreground hover:text-emerald-600">
-                    Kontak
                   </Link>
                 </li>
               </ul>

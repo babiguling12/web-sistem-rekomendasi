@@ -79,6 +79,10 @@ export default function RecommendationPage() {
       }),
     )
 
+    if (coordinates) {
+      sessionStorage.setItem("userCoordinates", JSON.stringify(coordinates))
+    }
+
     // Simulate processing time
     setTimeout(() => {
       setIsSubmitting(false)

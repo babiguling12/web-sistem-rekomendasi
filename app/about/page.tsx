@@ -89,9 +89,6 @@ export default function AboutPage() {
               <Link href="/destinations" className="text-sm font-medium transition-colors hover:text-emerald-600">
                 Destinasi
               </Link>
-              <Link href="/contact" className="text-sm font-medium transition-colors hover:text-emerald-600">
-                Kontak
-              </Link>
             </nav>
           </div>
         </div>
