@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,13 +14,26 @@ import {FaUmbrellaBeach} from "react-icons/fa"
 import {GiHiking, GiMountaintop} from "react-icons/gi"
 import Link from "next/link"
 
+const kabupatenBali = {
+  buleleng: { lat: -8.1420, lng: 115.0875 },
+  jembrana: { lat: -8.3000, lng: 114.6667 },
+  tabanan: { lat: -8.5413, lng: 115.1252 },
+  badung: { lat: -8.5167, lng: 115.2000 },
+  gianyar: { lat: -8.5333, lng: 115.4000 },
+  bangli: { lat: -8.2833, lng: 115.3500 },
+  klungkung: { lat: -8.5340, lng: 115.4380 },
+  karangasem: { lat: -8.4500, lng: 115.6167 },
+  denpasar: { lat: -8.6500, lng: 115.2167 }
+};
+
 
 export default function RecommendationPage() {
   const router = useRouter()
   // const [location, setLocation] = useState("")
   const [isLocating, setIsLocating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null)
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number }>({ lat: -8.409518, lng: 115.188919 })
+  const [distance, setDistance] = useState(0)
 
   // Form state
   const [district, setDistrict] = useState("")
@@ -72,6 +85,25 @@ export default function RecommendationPage() {
       router.push("/results")
     }, 1500)
   }
+
+  useEffect(() => {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+
+    const tikpus = kabupatenBali[district as keyof typeof kabupatenBali] || { lat: -8.409518, lng: 115.188919 }
+
+  const R = 6371; // Radius bumi dalam kilometer
+  const dLat = toRad(tikpus.lat - coordinates.lat);
+  const dLon = toRad(tikpus.lng - coordinates.lng);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(coordinates.lat)) *
+      Math.cos(toRad(tikpus.lat)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  setDistance(R * c);
+
+  }, [coordinates, district])
 
   return (
     <div className="min-h-screen bg-[#f8f5f2] relative overflow-hidden">
@@ -139,7 +171,7 @@ export default function RecommendationPage() {
                   {coordinates ? (
                     <span className="py-2 px-3 border rounded-md flex-1 
                     bg-gradient-to-r from-amber-400/70 to-orange-500/70  text-center">
-                      Lat: {coordinates.lat}, Lng: {coordinates.lng}
+                      Jarak ke {district || "titik pusat"}: {Math.ceil(distance)} km
                     </span>
                   ) : (
                     <span className="py-2 px-3 border rounded-md flex-1 
