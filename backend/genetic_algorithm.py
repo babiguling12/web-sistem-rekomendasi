@@ -133,7 +133,7 @@ def get_recommendations(user_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     
     # Get recommendations using genetic algorithm
     recommended_destinations = genetic_algorithm(
-        sample_destinations, user_lat, user_lon
+        sample_destinations, user_lat, user_lon)
 
 
-Let's update the recommendation form to connect with our API:
+# Let's update the recommendation form to connect with our API:
