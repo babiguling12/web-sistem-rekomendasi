@@ -38,39 +38,78 @@ const DestinationsPage = () => {
 
   const baliRect = '114.432,-9.135,115.712,-8.045';
 
-  useEffect(() => {
-    async function fetchPlaces() {
-      try {
-        setIsLoading(true);
-        const response = await fetch(
-          `https://api.geoapify.com/v2/places?categories=natural,tourism.sights&filter=rect:${baliRect}&limit=100&apiKey=${GEOAPIFY_KEY}`
-        );
-        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-        const data = await response.json();
+useEffect(() => {
+  async function fetchPlaces() {
+    try {
+      setIsLoading(true);
 
-        const rawPlaces = data.features.map((f: any) => ({
-          id: f.properties.place_id || `place-${Math.random().toString(36).substring(2, 9)}`,
-          name: f.properties.name || f.properties.formatted || '',
-          location: f.properties.city || f.properties.county || 'Bali',
-          lat: f.geometry.coordinates[1],
-          lon: f.geometry.coordinates[0],
-          distance: 'N/A',
-          category: f.properties.categories?.[0] || 'lainnya',
-        })).filter((p: any) => p.name && !p.name.toLowerCase().includes('unnamed'));
+      const response = await fetch(
+        `https://api.geoapify.com/v2/places?categories=natural,tourism.sights&filter=rect:${baliRect}&limit=500&apiKey=${GEOAPIFY_KEY}`
+      );
+      if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+      const data = await response.json();
 
-        const enriched = await Promise.all(rawPlaces.map(enrichPlace));
-        setPlaces(enriched);
-        sessionStorage.setItem("lastSearchPlaces", JSON.stringify(enriched));
-      } catch (err) {
-        console.error('Error fetching places:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load destinations');
-      } finally {
-        setIsLoading(false);
+      const kabupatenList = [
+        "buleleng", "jembrana", "tabanan", "badung", "gianyar", "bangli", "klungkung", "karangasem", "denpasar"
+      ];
+
+      const seen = new Set(); // buat ngeilangin duplikat tempat wsatanya
+      const filteredPerKabupaten: any[] = [];
+
+      for (const kabupaten of kabupatenList) {
+        const perKabupaten = data.features.filter((f: any) => {
+          const county = f.properties.county?.toLowerCase() || '';
+          const name = f.properties.name || '';
+          const lat = f.geometry.coordinates[1];
+          const lon = f.geometry.coordinates[0];
+          const idKey = `${name}-${lat}-${lon}`;
+
+          if (!name || !county.includes(kabupaten)) return false;
+          if (seen.has(idKey)) return false;
+          seen.add(idKey);
+          return true;
+        }).slice(0, 20); // min 20 perkab
+
+        filteredPerKabupaten.push(...perKabupaten);
       }
-    }
 
-    fetchPlaces();
-  }, []);
+      // acak tempat wisatanya
+      const shuffledPlaces = filteredPerKabupaten
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 200); // max 200 tempat
+
+      // mini 180 data tpi datanya krg jdi gk kanggo
+      // if (shuffledPlaces.length < 180) {
+      //   const existingIds = new Set(shuffledPlaces.map((f: any) => f.properties.place_id));
+      //   const additional = filteredPerKabupaten.filter(
+      //     (f: any) => !existingIds.has(f.properties.place_id)
+      //   ).slice(0, 180 - shuffledPlaces.length);
+      //   shuffledPlaces = shuffledPlaces.concat(additional);
+      // }
+
+      const rawPlaces = shuffledPlaces.map((f: any) => ({
+        id: f.properties.place_id || `place-${Math.random().toString(36).substring(2, 9)}`,
+        name: f.properties.name || f.properties.formatted || '',
+        location: f.properties.county?.toLowerCase() || 'bali',
+        lat: f.geometry.coordinates[1],
+        lon: f.geometry.coordinates[0],
+        distance: 'N/A',
+        category: f.properties.categories?.[0] || 'lainnya',
+      }));
+
+      const enriched = await Promise.all(rawPlaces.map(enrichPlace));
+      setPlaces(enriched);
+      sessionStorage.setItem("lastSearchPlaces", JSON.stringify(enriched));
+    } catch (err) {
+      console.error('Error fetching places:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load destinations');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  fetchPlaces();
+}, []);
 
   async function fetchFoursquareImage(name: string, lat: number, lon: number): Promise<string | null> {
     try {
