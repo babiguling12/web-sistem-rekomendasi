@@ -10,7 +10,7 @@ const GoogleMap = dynamic(() => import('@/components/maps'), { ssr: false });
 
 export default function DestinationDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const unwrappedParams = use(params); // Unwrap the params promise
+  const unwrappedParams = use(params);
   const [destination, setDestination] = useState<any>(null);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [similarPlaces, setSimilarPlaces] = useState<any[]>([]);
