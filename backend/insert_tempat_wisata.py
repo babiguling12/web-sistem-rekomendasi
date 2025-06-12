@@ -1,6 +1,6 @@
 import json
 
-with open(r"C:\Users\Gustu\Documents\TUGAS KULIAH\PBL\web-sistem-rekomendasi\backend\places.json", "r", encoding="utf-8") as f:
+with open(r"places.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 values = []
