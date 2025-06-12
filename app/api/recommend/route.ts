@@ -1,16 +1,36 @@
 import { NextResponse } from "next/server"
 
-// This is a mock implementation of what would be a Python backend
-// In a real implementation, this would call a Python script or API
+// FastAPI endpoint
+const FASTAPI_URL = "http://localhost:8000"
+
 export async function POST(request: Request) {
   try {
     const data = await request.json()
 
-    // In a real implementation, this data would be sent to a Python backend
-    // that implements the genetic algorithm
-    console.log("Received data for recommendation:", data)
+    console.log("Sending data to FastAPI:", data)
 
-    // Mock response - in a real implementation, this would come from the Python backend
+    // Send request to FastAPI backend
+    const response = await fetch(`${FASTAPI_URL}/recommend`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      throw new Error(`FastAPI responded with status: ${response.status}`)
+    }
+
+    const results = await response.json()
+
+    console.log("Received results from FastAPI:", results)
+
+    return NextResponse.json(results)
+  } catch (error) {
+    console.error("Error calling FastAPI:", error)
+
+    // Fallback to mock data if FastAPI is not available
     const mockResults = [
       {
         id: 1,
@@ -36,15 +56,8 @@ export async function POST(request: Request) {
         description:
           "Air Terjun Tegenungan menawarkan pemandangan air terjun yang spektakuler dengan kolam alami di bawahnya yang cocok untuk berenang.",
       },
-      // More results would be here
     ]
 
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
     return NextResponse.json({ results: mockResults })
-  } catch (error) {
-    console.error("Error processing recommendation:", error)
-    return NextResponse.json({ error: "Failed to process recommendation" }, { status: 500 })
   }
 }

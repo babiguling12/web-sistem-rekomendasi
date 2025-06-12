@@ -5,71 +5,33 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Activity, Star, ArrowLeft, Share2, Heart, CloudSun } from "lucide-react"
+import { MapPin, Activity, Star, ArrowLeft, Thermometer } from "lucide-react"
 
-// Static data untuk demo
-const mockResults = [
-  {
-    id: 1,
-    name: "Pantai Kuta",
-    location: "Badung",
-    distance: "5.2 km",
-    weather: "Cerah, 30°C",
-    popularity: 4.7,
-    activityLevel: "Sedang",
-    image: "/placeholder.svg?height=200&width=400&text=Pantai%20Kuta",
-    description:
-      "Pantai Kuta adalah salah satu pantai paling terkenal di Bali, terkenal dengan pemandangan matahari terbenamnya yang indah dan ombak yang cocok untuk berselancar.",
-  },
-  {
-    id: 2,
-    name: "Air Terjun Tegenungan",
-    location: "Gianyar",
-    distance: "12.8 km",
-    weather: "Berawan, 28°C",
-    popularity: 4.5,
-    activityLevel: "Sedang",
-    image: "/placeholder.svg?height=200&width=400&text=Air%20Terjun%20Tegenungan",
-    description:
-      "Air Terjun Tegenungan menawarkan pemandangan air terjun yang spektakuler dengan kolam alami di bawahnya yang cocok untuk berenang.",
-  },
-  {
-    id: 3,
-    name: "Tegalalang Rice Terrace",
-    location: "Gianyar",
-    distance: "18.5 km",
-    weather: "Cerah, 29°C",
-    popularity: 4.8,
-    activityLevel: "Santai",
-    image: "/placeholder.svg?height=200&width=400&text=Tegalalang%20Rice%20Terrace",
-    description:
-      "Tegalalang Rice Terrace adalah sawah bertingkat yang indah dengan sistem irigasi tradisional Bali yang dikenal sebagai subak.",
-  },
-  {
-    id: 4,
-    name: "Pantai Nusa Dua",
-    location: "Badung",
-    distance: "15.3 km",
-    weather: "Cerah, 31°C",
-    popularity: 4.6,
-    activityLevel: "Santai",
-    image: "/placeholder.svg?height=200&width=400&text=Pantai%20Nusa%20Dua",
-    description:
-      "Pantai Nusa Dua terkenal dengan pasir putihnya yang bersih dan perairan yang tenang, cocok untuk berenang dan snorkeling.",
-  },
-  {
-    id: 5,
-    name: "Gunung Batur",
-    location: "Bangli",
-    distance: "42.7 km",
-    weather: "Berawan, 24°C",
-    popularity: 4.9,
-    activityLevel: "Ekstrem",
-    image: "/placeholder.svg?height=200&width=400&text=Gunung%20Batur",
-    description:
-      "Gunung Batur adalah gunung berapi aktif yang menawarkan pendakian menarik dengan pemandangan matahari terbit yang spektakuler.",
-  },
-]
+interface Destination {
+  id: number
+  name: string
+  location: string
+  distance: number
+  weather: string
+  temperature: number
+  popularity: number
+  activityLevel: string
+  image: string
+  description: string
+  fitness_score?: number
+  terrain_type: string
+  time_preference: string
+}
+
+interface RecommendationResult {
+  destinations: Destination[]
+  algorithm_info: {
+    generations: number
+    population_size: number
+    mutation_rate: number
+    execution_time: number
+  }
+}
 
 export default function ResultsPage() {
   interface FormData {
@@ -80,28 +42,130 @@ export default function ResultsPage() {
   }
 
   const [formData, setFormData] = useState<FormData | null>(null)
+  const [results, setResults] = useState<RecommendationResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Ambil data dari session storage
+    // Check if we have recommendation params, if not redirect to recommendation page
     const storedParams = sessionStorage.getItem("recommendationParams")
-    if (storedParams) {
-      setFormData(JSON.parse(storedParams))
+    if (!storedParams) {
+      window.location.href = "/recommendation"
+      return
     }
 
-    // Anggep ja loading
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1000)
+    const fetchResults = async () => {
+      try {
+        // Ambil data dari session storage
+        const storedParams = sessionStorage.getItem("recommendationParams")
+        if (!storedParams) {
+          setError("Data preferensi tidak ditemukan")
+          setIsLoading(false)
+          return
+        }
 
-    return () => clearTimeout(timer)
+        const params = JSON.parse(storedParams)
+        setFormData(params)
+
+        // Kirim request ke FastAPI backend
+        const response = await fetch("/api/recommend", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(params),
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setResults(data)
+      } catch (error) {
+        console.error("Error fetching recommendations:", error)
+        setError("Gagal memuat rekomendasi. Silakan coba lagi.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchResults()
   }, [])
+
+  const getActivityLevelText = (level: string) => {
+    switch (level) {
+      case "relaxed":
+        return "Santai"
+      case "moderate":
+        return "Sedang"
+      case "extreme":
+        return "Ekstrem"
+      default:
+        return level
+    }
+  }
+
+  const getTerrainTypeText = (type: string) => {
+    switch (type) {
+      case "highland":
+        return "Dataran Tinggi"
+      case "lowland":
+        return "Dataran Rendah"
+      case "coastal":
+        return "Perairan"
+      default:
+        return type
+    }
+  }
+
+  const getTimeOfDayText = (time: string) => {
+    switch (time) {
+      case "morning":
+        return "Pagi"
+      case "afternoon":
+        return "Siang"
+      case "evening":
+        return "Sore"
+      default:
+        return time
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className="container py-16 flex flex-col items-center justify-center">
+      <div className="container py-16 flex flex-col items-center justify-center min-h-screen">
         <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-lg">Memuat hasil rekomendasi...</p>
+        <p className="mt-4 text-lg">Memproses rekomendasi dengan algoritma genetika...</p>
+        <p className="text-sm text-muted-foreground">Mohon tunggu sebentar</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container py-16 flex flex-col items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Terjadi Kesalahan</h2>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <Button asChild>
+            <Link href="/recommendation">Kembali ke Pencarian</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!results || !results.destinations || results.destinations.length === 0) {
+    return (
+      <div className="container py-16 flex flex-col items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Tidak Ada Hasil</h2>
+          <p className="text-muted-foreground mb-6">Tidak ditemukan destinasi yang sesuai dengan preferensi Anda</p>
+          <Button asChild>
+            <Link href="/recommendation">Coba Pencarian Lain</Link>
+          </Button>
+        </div>
       </div>
     )
   }
@@ -116,8 +180,36 @@ export default function ResultsPage() {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold tracking-tighter mb-2">Hasil Rekomendasi Wisata</h1>
         <p className="text-muted-foreground">
-          Berikut adalah 5 destinasi wisata terbaik yang sesuai dengan preferensi Anda
+          Berikut adalah {results.destinations.length} destinasi wisata terbaik yang dipilih menggunakan algoritma
+          genetika
         </p>
+
+        {/* Algorithm Info */}
+        {results.algorithm_info && (
+          <div className="mt-4 p-4 bg-emerald-50 rounded-lg">
+            <h3 className="font-semibold text-emerald-800 mb-2">Informasi Algoritma Genetika</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-emerald-600">Generasi:</span>
+                <div className="font-medium">{results.algorithm_info.generations}</div>
+              </div>
+              <div>
+                <span className="text-emerald-600">Populasi:</span>
+                <div className="font-medium">{results.algorithm_info.population_size}</div>
+              </div>
+              <div>
+                <span className="text-emerald-600">Mutasi:</span>
+                <div className="font-medium">{(results.algorithm_info.mutation_rate * 100).toFixed(1)}%</div>
+              </div>
+              <div>
+                <span className="text-emerald-600">Waktu:</span>
+                <div className="font-medium">{results.algorithm_info.execution_time.toFixed(2)}s</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* User Preferences */}
         {formData && (
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {formData.district && (
@@ -127,25 +219,17 @@ export default function ResultsPage() {
             )}
             {formData.terrainType && (
               <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">
-                {formData.terrainType === "highland"
-                  ? "Dataran Tinggi"
-                  : formData.terrainType === "lowland"
-                    ? "Dataran Rendah"
-                    : "Perairan"}
+                {getTerrainTypeText(formData.terrainType)}
               </span>
             )}
             {formData.timeOfDay && (
               <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">
-                {formData.timeOfDay === "morning" ? "Pagi" : formData.timeOfDay === "afternoon" ? "Siang" : "Sore"}
+                {getTimeOfDayText(formData.timeOfDay)}
               </span>
             )}
             {formData.activityLevel && (
               <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">
-                {formData.activityLevel === "relaxed"
-                  ? "Santai"
-                  : formData.activityLevel === "moderate"
-                    ? "Sedang"
-                    : "Ekstrem"}
+                {getActivityLevelText(formData.activityLevel)}
               </span>
             )}
           </div>
@@ -153,54 +237,78 @@ export default function ResultsPage() {
       </div>
 
       <div className="space-y-6">
-        {mockResults.map((result) => (
-          <Card key={result.id} className="overflow-hidden">
+        {results.destinations.map((destination, index) => (
+          <Card key={destination.id} className="overflow-hidden">
             <div className="md:flex">
               <div className="relative h-48 md:h-auto md:w-1/3">
-                <Image src={result.image || "/placeholder.svg"} alt={result.name} fill className="object-cover" />
+                <Image
+                  src={destination.image || "/placeholder.svg?height=200&width=400"}
+                  alt={destination.name}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute top-2 left-2 bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                  #{index + 1}
+                </div>
+                {destination.fitness_score && (
+                  <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                    Score: {destination.fitness_score.toFixed(2)}
+                  </div>
+                )}
               </div>
               <CardContent className="p-6 md:w-2/3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h2 className="text-xl font-bold mb-1">{result.name}</h2>
+                    <h2 className="text-xl font-bold mb-1">{destination.name}</h2>
                     <div className="flex items-center text-sm text-muted-foreground mb-2">
                       <MapPin className="h-4 w-4 mr-1" />
                       <span>
-                        {result.location} • {result.distance}
+                        {destination.location} • {destination.distance.toFixed(1)} km
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400 mr-1" />
-                    <span className="font-medium">{result.popularity}</span>
+                    <span className="font-medium">{destination.popularity.toFixed(1)}</span>
                   </div>
                 </div>
 
-                <p className="text-sm mb-4">{result.description}</p>
+                <p className="text-sm mb-4">{destination.description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
-                    <CloudSun className="h-3 w-3 mr-1" />
-                    <span>{result.weather}</span>
+                    <Thermometer className="h-3 w-3 mr-1" />
+                    <span>{destination.temperature}°C</span>
                   </div>
                   <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
                     <Activity className="h-3 w-3 mr-1" />
-                    <span>{result.activityLevel}</span>
+                    <span>{getActivityLevelText(destination.activityLevel)}</span>
+                  </div>
+                  <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
+                    <span>{getTerrainTypeText(destination.terrain_type)}</span>
                   </div>
                 </div>
 
+                <div className="flex gap-2">
+                  <Button size="sm" asChild>
+                    <Link href={`/destinations/${destination.id}`}>Lihat Detail</Link>
+                  </Button>
+                </div>
               </CardContent>
             </div>
           </Card>
         ))}
       </div>
 
-      <div className="flex justify-start mt-8">
-        <Button variant="outline" className="mr-4">
+      <div className="flex justify-center mt-8 gap-4">
+        <Button variant="outline" asChild>
           <Link href="/recommendation" className="flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Ubah Preferensi
           </Link>
+        </Button>
+        <Button asChild>
+          <Link href="/destinations">Jelajahi Semua Destinasi</Link>
         </Button>
       </div>
     </div>

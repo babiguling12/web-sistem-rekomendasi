@@ -10,6 +10,7 @@ export const metadata = {
   title: "PayuMelali - Sistem Rekomendasi Destinasi Wisata Alam di Pulau Bali",
   description:
     "Sistem rekomendasi destinasi wisata alam di Pulau Bali berbasis web menggunakan algoritma genetika",
+    generator: 'v0.dev'
 };
 
 export default function RootLayout({
