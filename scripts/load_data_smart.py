@@ -48,6 +48,23 @@ def create_real_database():
         FOREIGN KEY (tipeaktivitas_id) REFERENCES tipeaktivitas(id),
         FOREIGN KEY (kabupaten_id) REFERENCES kabupaten(id)
     );
+
+    CREATE TABLE IF NOT EXISTS jeniswaktu (
+        id INTEGER PRIMARY KEY,
+        waktu TEXT NOT NULL
+    );
+                         
+    CREATE TABLE IF NOT EXISTS waktureal (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tanggal TEXT,
+        jam TEXT,
+        kondisi TEXT,
+        temperature REAL,
+        jeniswaktu_id INTEGER,
+        destinasi_kode TEXT,
+        FOREIGN KEY (jeniswaktu_id) REFERENCES jeniswaktu(id),
+        FOREIGN KEY (destinasi_kode) REFERENCES destinasi(kode)
+    );
     """)
 
     if not os.path.exists(json_path):
@@ -80,6 +97,9 @@ def create_real_database():
     }
     for kab, kid in kabupaten_map.items():
         cursor.execute("INSERT OR IGNORE INTO kabupaten (id, nama) VALUES (?, ?)", (kid, kab))
+
+    for waktu in [(1, "morning"), (2, "afternoon"), (3, "evening")]:
+        cursor.execute("INSERT OR IGNORE INTO jeniswaktu (id, waktu) VALUES (?, ?)", waktu)
 
     for i, place in enumerate(places):
         props = place["properties"]

@@ -296,7 +296,7 @@ export default function ResultsPage() {
                 <div className="flex flex-wrap gap-2 mb-4">
                   <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
                     <Thermometer className="h-3 w-3 mr-1" />
-                    <span>{destination.temperature}°C</span>
+                    <span>{destination.weather}, {destination.temperature}°C</span>
                   </div>
                   <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
                     <Activity className="h-3 w-3 mr-1" />

@@ -5,7 +5,7 @@ import path from "path";
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const args = JSON.stringify(req.body);
-    const scriptPath = path.join(process.cwd(), "backend/genetic_algorithm.py");
+    const scriptPath = path.join(process.cwd(), "backend/main.py");
 
     exec(`python ${scriptPath} '${args}'`, (err, stdout, stderr) => {
       if (err) {
