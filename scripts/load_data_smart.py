@@ -3,104 +3,130 @@ import json
 import os
 
 def create_real_database():
-    """Create database with real data from places.json using correct field names"""
-    
-    # Path to database and JSON file
     db_path = os.path.join("backend", "rekomendasi_wisata.db")
     json_path = os.path.join("backend", "places.json")
-    
+
     print(f"📂 Looking for JSON at: {os.path.abspath(json_path)}")
-    
-    # Remove old database if exists
+
     if os.path.exists(db_path):
         os.remove(db_path)
         print("✅ Removed old database")
-    
-    # Create new database
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
-    # First, check JSON structure
-    if os.path.exists(json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            try:
-                places_data = json.load(f)
-                print(f"✅ Found {len(places_data['features'])} places in JSON file")
-            except json.JSONDecodeError as e:
-                print(f"❌ Error parsing JSON: {str(e)}")
-                # Try to read the first few lines to debug
-                f.seek(0)
-                print("📄 First 100 characters of file:")
-                print(f.read(100))
-                return
-    else:
+
+    cursor.executescript("""
+    CREATE TABLE IF NOT EXISTS tipedataran (
+        id INTEGER PRIMARY KEY,
+        tipe TEXT NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS jeniswaktu (
+        id INTEGER PRIMARY KEY,
+        waktu TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS tipeaktivitas (
+        id INTEGER PRIMARY KEY,
+        tipe TEXT NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS kabupaten (
+        id INTEGER PRIMARY KEY,
+        nama TEXT NOT NULL UNIQUE
+    );
+
+    CREATE TABLE IF NOT EXISTS destinasi (
+        kode TEXT PRIMARY KEY,
+        nama TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
+        tipedataran_id INTEGER,
+        tipeaktivitas_id INTEGER,
+        kabupaten_id INTEGER,
+        FOREIGN KEY (tipedataran_id) REFERENCES tipedataran(id),
+        FOREIGN KEY (tipeaktivitas_id) REFERENCES tipeaktivitas(id),
+        FOREIGN KEY (kabupaten_id) REFERENCES kabupaten(id)
+    );
+    """)
+
+    if not os.path.exists(json_path):
         print(f"❌ places.json not found at {json_path}!")
-        # List files in backend directory to help debug
-        backend_dir = os.path.join("backend")
-        if os.path.exists(backend_dir):
-            print(f"📂 Files in {backend_dir} directory:")
-            for file in os.listdir(backend_dir):
-                print(f"  - {file}")
         return
-    
-    if not places_data:
-        print("❌ No data found in places.json!")
-        return
-        
-    # Create table based on actual JSON structure
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tempat_wisata (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nama TEXT NOT NULL,
-            kabupaten TEXT,
-            tipe_dataran TEXT,
-            tingkat_aktivitas TEXT,
-            popularitas REAL,
-            latitude REAL,
-            longitude REAL,
-            deskripsi TEXT
-        )
-    ''')
-    
-    # Insert data with field mapping
-    for feature in places_data['features']:
-        properties = feature['properties']
-        
-        nama = properties.get('name', 'Unknown Place')
-        kabupaten = properties.get('county', 'Unknown')
-        tipe_dataran = properties.get('categories', ['Unknown'])[0]  # Take the first category
-        
-        # Handle missing or non-numeric values
-        tingkat_aktivitas = properties.get('name') or 'Sedang'
-        popularitas = properties.get('rating') or 4.0
-        latitude = feature['geometry']['coordinates'][1]
-        longitude = feature['geometry']['coordinates'][0]
-        deskripsi = properties.get('description') or f"Tempat wisata di {kabupaten}"
-        
-        cursor.execute('''
-            INSERT INTO tempat_wisata 
-            (nama, kabupaten, tipe_dataran, tingkat_aktivitas, popularitas, latitude, longitude, deskripsi)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (nama, kabupaten, tipe_dataran, tingkat_aktivitas, popularitas, latitude, longitude, deskripsi))
-        
-        print(f"✅ Added: {nama} ({kabupaten})")
-    
+
+    with open(json_path, "r", encoding="utf-8") as f:
+        places = json.load(f)["features"]
+        print(f"✅ Found {len(places)} places in JSON file")
+
+    def get_or_create_id(table, column, value):
+        cursor.execute(f"SELECT id FROM {table} WHERE {column} = ?", (value,))
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        cursor.execute(f"INSERT INTO {table} ({column}) VALUES (?)", (value,))
+        return cursor.lastrowid
+
+    # Insert static reference data
+    for dataran in [(1, "Dataran Tinggi"), (2, "Dataran Rendah"), (3, "Perairan")]:
+        cursor.execute("INSERT OR IGNORE INTO tipedataran (id, tipe) VALUES (?, ?)", dataran)
+
+    for aktivitas in [(1, "Santai"), (2, "Sedang"), (3, "Ekstrem")]:
+        cursor.execute("INSERT OR IGNORE INTO tipeaktivitas (id, tipe) VALUES (?, ?)", aktivitas)
+
+    kabupaten_map = {
+        "Badung": 1, "Bangli": 2, "Buleleng": 3, "Gianyar": 4, "Jembrana": 5,
+        "Karangasem": 6, "Klungkung": 7, "Tabanan": 8, "Denpasar": 9,
+        "Klungkung Regency": 7
+    }
+    for kab, kid in kabupaten_map.items():
+        cursor.execute("INSERT OR IGNORE INTO kabupaten (id, nama) VALUES (?, ?)", (kid, kab))
+
+    for i, place in enumerate(places):
+        props = place["properties"]
+        geom = place["geometry"]["coordinates"]
+        categories = props.get("categories", [])
+
+        nama = props.get("name", f"Destinasi {i+1}")
+        kabupaten_name = props.get("county", "")
+        latitude = geom[1]
+        longitude = geom[0]
+        kode = f"D{i+1:04}"
+
+        if "natural.mountain" in categories or "peak" in categories:
+            tipedataran_id = 1
+        elif any(x in categories for x in ["natural.forest", "park", "garden"]):
+            tipedataran_id = 2
+        elif any(x in categories for x in ["natural.water", "lake", "river"]):
+            tipedataran_id = 3
+        else:
+            tipedataran_id = 2
+
+        categories = [c.lower() for c in props.get("categories", [])]
+        categories_joined = ",".join(categories)
+        if any(x in categories_joined for x in ["temple", "monument", "museum", "park", "cultural", "heritage", "memorial"]):
+            tipeaktivitas_id = 1
+        elif any(x in categories_joined for x in ["forest", "zoo", "garden", "hiking", "recreation", "nature", "walk", "reserve", "jungle", "trail", "track"]):
+            tipeaktivitas_id = 2
+        elif any(x in categories_joined for x in ["mountain", "peak", "climbing", "trekking", "diving", "extreme"]):
+            tipeaktivitas_id = 3
+        else:
+            tipeaktivitas_id = 1
+
+        kabupaten_id = kabupaten_map.get(kabupaten_name, 0)
+        if kabupaten_id == 0:
+            continue
+
+        cursor.execute("""
+            INSERT INTO destinasi (kode, nama, latitude, longitude, 
+                                   tipedataran_id, tipeaktivitas_id, kabupaten_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (kode, nama, latitude, longitude, tipedataran_id, tipeaktivitas_id, kabupaten_id))
+
+        print(f"✅ Inserted {nama} ({kabupaten_name})")
+
     conn.commit()
-    
-    # Verify data
-    cursor.execute("SELECT COUNT(*) FROM tempat_wisata")
-    count = cursor.fetchone()[0]
-    print(f"\n✅ Database created with {count} destinations")
-    
-    # Show sample data
-    cursor.execute("SELECT nama, kabupaten, tipe_dataran, popularitas FROM tempat_wisata LIMIT 5")
-    sample = cursor.fetchall()
-    print("\n📍 Sample destinations:")
-    for i, (nama, kabupaten, tipe, rating) in enumerate(sample, 1):
-        print(f"   {i}. {nama} ({kabupaten}) - {tipe} - Rating: {rating}")
-    
     conn.close()
-    print(f"\n✅ Database saved to: {db_path}")
+    print("\n✅ All data loaded and saved!")
 
 if __name__ == "__main__":
     create_real_database()

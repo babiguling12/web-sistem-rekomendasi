@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Activity, Star, ArrowLeft, Thermometer } from "lucide-react"
 
 interface Destination {
-  id: number
+  kode: string
   name: string
   location: string
   distance: number
@@ -47,7 +47,6 @@ export default function ResultsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check if we have recommendation params, if not redirect to recommendation page
     const storedParams = sessionStorage.getItem("recommendationParams")
     if (!storedParams) {
       window.location.href = "/recommendation"
@@ -56,7 +55,6 @@ export default function ResultsPage() {
 
     const fetchResults = async () => {
       try {
-        // Ambil data dari session storage
         const storedParams = sessionStorage.getItem("recommendationParams")
         if (!storedParams) {
           setError("Data preferensi tidak ditemukan")
@@ -67,8 +65,7 @@ export default function ResultsPage() {
         const params = JSON.parse(storedParams)
         setFormData(params)
 
-        // Kirim request ke FastAPI backend
-        const response = await fetch("/api/recommend", {
+        const response = await fetch("http://localhost:8000/recommend", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -81,7 +78,28 @@ export default function ResultsPage() {
         }
 
         const data = await response.json()
-        setResults(data)
+        console.log("💬 Response from API:", data)
+
+        const fixedResults: RecommendationResult = {
+          destinations: data.results.map((d: any) => ({
+            kode: d.kode,
+            name: d.nama,
+            location: d.kabupaten,
+            distance: d.distance,
+            weather: d.weather || "",
+            temperature: d.temperature || 0,
+            popularity: d.popularity || 0,
+            activityLevel: d.tingkat_aktivitas,
+            image: d.image,
+            description: d.description || "",
+            fitness_score: d.fitness_score,
+            terrain_type: d.tipe_dataran,
+            time_preference: d.time_preference || ""
+          })),
+          algorithm_info: data.algorithm_info
+        }
+
+        setResults(fixedResults)
       } catch (error) {
         console.error("Error fetching recommendations:", error)
         setError("Gagal memuat rekomendasi. Silakan coba lagi.")
@@ -238,7 +256,7 @@ export default function ResultsPage() {
 
       <div className="space-y-6">
         {results.destinations.map((destination, index) => (
-          <Card key={destination.id} className="overflow-hidden">
+          <Card key={destination.kode} className="overflow-hidden">
             <div className="md:flex">
               <div className="relative h-48 md:h-auto md:w-1/3">
                 <Image
@@ -263,7 +281,7 @@ export default function ResultsPage() {
                     <div className="flex items-center text-sm text-muted-foreground mb-2">
                       <MapPin className="h-4 w-4 mr-1" />
                       <span>
-                        {destination.location} • {destination.distance.toFixed(1)} km
+                        {destination.location} • {destination.distance !== undefined ? destination.distance.toFixed(1) : '-'} km
                       </span>
                     </div>
                   </div>
@@ -291,7 +309,7 @@ export default function ResultsPage() {
 
                 <div className="flex gap-2">
                   <Button size="sm" asChild>
-                    <Link href={`/destinations/${destination.id}`}>Lihat Detail</Link>
+                    <Link href={`/destinations/${destination.kode}`}>Lihat Detail</Link>
                   </Button>
                 </div>
               </CardContent>
