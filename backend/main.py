@@ -197,12 +197,10 @@ def genetic_algorithm(destinations, preferences, generations=20, population_size
 
 
 
-FOURSQUARE_KEY = "'fsq3fuXG1UpBrEPokg1hPjcotnEi1/1GNAzRBPRc7jqsJCk='"
-
 def fetch_foursquare_image(name: str, lat: float, lon: float) -> str | None:
     try:
         headers = {
-            "Authorization": FOURSQUARE_KEY
+            "Authorization": "fsq3fuXG1UpBrEPokg1hPjcotnEi1/1GNAzRBPRc7jqsJCk="
         }
 
         # Langkah 1: Search tempat berdasarkan nama dan koordinat
