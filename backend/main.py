@@ -37,14 +37,15 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # --- Fungsi Fitness: menghitung kecocokan antara destinasi dan preferensi pengguna ---
+# --- Fungsi Fitness: menghitung kecocokan antara destinasi dan preferensi pengguna ---
 def fitness_function(destination, preferences):
     total_score = 0
 
-    # Penilaian Kabupaten: cocok (4), tidak cocok (1) dengan bobot 1
-    if destination["kabupaten"].lower() == preferences["district"].lower():
-        location_score = 4
-    else:
-        location_score = 1
+     # Penilaian Kabupaten: cocok (4), tidak cocok (0) -> DAN abaikan yang tidak cocok nanti di filter
+    if destination["kabupaten"].lower() != preferences["district"].lower():
+        return 0 # langsung tidak dihitung jika tidak cocok (didiskualifikasi langsung)
+    
+    location_score = 4
     total_score += location_score * 1  # bobot 1
 
     # Penilaian Tipe Dataran: cocok (4), cukup cocok (3), kurang cocok (2) dengan bobot 1.5
@@ -90,23 +91,20 @@ def fitness_function(destination, preferences):
         popularity_score = 1
     total_score += popularity_score * 2  # bobot 2
 
-    # Penilaian Jarak: semakin dekat, semakin besar skor dengan bobot 2
+    # Penilaian Jarak: semakin dekat, semakin besar skor dengan bobot 4 (paling tinggi)
     distance = calculate_distance(
         preferences["latitude"], preferences["longitude"],
         destination["latitude"], destination["longitude"]
     )
-    if distance < 5:
-        distance_score = 4
-    elif distance < 15:
-        distance_score = 3
-    elif distance < 30:
-        distance_score = 2
+    max_distance = 50  # anggap 50 km adalah batas terjauh yang masih relevan
+    if distance > max_distance:
+        distance_score = 0  # terlalu jauh
     else:
-        distance_score = 1
-    total_score += distance_score * 2  # bobot 2
+        distance_score = (1 - (distance / max_distance)) * 4  # nilai 0–4, semakin dekat semakin besar
+    total_score += distance_score * 4  # bobot paling tinggi
 
     # Normalisasi skor agar berada dalam rentang 0.0 - 1.0
-    max_score = 4*1 + 4*1.5 + 4*1.5 + 4*2 + 4*2
+    max_score = 4*1 + 4*1.5 + 4*1.5 + 4*2 + 4*4
     normalized_score = total_score / max_score
     return round(normalized_score, 3)
 
@@ -170,7 +168,11 @@ def genetic_algorithm(destinations, preferences, generations=20, population_size
         population = new_population
 
     # Evaluasi akhir: hitung skor fitness dan urutkan dari terbaik
-    final_scores = [(dest, fitness_function(dest, preferences)) for dest in population]
+    final_scores = [
+        (dest, fitness_function(dest, preferences)) 
+        for dest in population 
+        if fitness_function(dest, preferences) > 0
+    ]
     final_scores.sort(key=lambda x: x[1], reverse=True)
 
     # Pilih hanya destinasi dengan kode unik agar tidak terjadi duplikasi
@@ -277,7 +279,9 @@ async def recommend(data: Dict[str, Any]):
             if dest["kode"] not in seen_destinations:
                 print(f"🎯 Destinasi: {dest['kode']} - {dest['nama']} - {dest['kabupaten']} - {round(score, 3)}")
                 seen_destinations.add(dest["kode"])
-                response.append({
+
+                # Buat dictionary hasil destinasi dengan detail lengkap
+                result_item = {
                     "kode": dest["kode"],
                     "nama": dest["nama"],
                     "kabupaten": dest["kabupaten"],
@@ -287,19 +291,22 @@ async def recommend(data: Dict[str, Any]):
                     "tingkat_aktivitas": dest["tingkat_aktivitas"],
                     "popularitas": dest["popularitas"],
                     "fitness_score": round(score, 3),
-                    # Tambahan agar sesuai dengan frontend
-                    "image": fetch_foursquare_image(dest["nama"], dest["latitude"], dest["longitude"]) or '/placeholder.svg',
+                    "image": fetch_foursquare_image(dest["nama"], dest["latitude"], dest["longitude"]) or "/placeholder.svg",
                     "description": f"Destinasi wisata bernama {dest['nama']} di {dest['kabupaten']}.",
-                    "distance": calculate_distance(preferences["latitude"], preferences["longitude"], dest["latitude"], dest["longitude"]),
-                    "temperature": random.randint(24, 32),  # Mock temperature
-                    "weather": "Cerah",  # Mock weather
-                })
+                    "distance": calculate_distance(
+                        preferences["latitude"], preferences["longitude"],
+                        dest["latitude"], dest["longitude"]
+                    ),
+                    "temperature": random.randint(24, 32),
+                    "weather": "Cerah"
+                }
 
+                response.append(result_item)
 
         return {
             "total": len(response),
             "results": response,
-            "info": algorithm_info,
+            "algorithm_info": algorithm_info,
             "preferences": preferences
         }
     except Exception as e:
