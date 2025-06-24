@@ -6,14 +6,21 @@ import Link from 'next/link';
 import { getCategoryByElevation, mapWeatherCodeToDescription } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { MapPin, Star, CloudSun, Activity } from 'lucide-react';
 import {
-  MapPin, Star, CloudSun, Activity
-} from 'lucide-react';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination';
 import React from 'react';
 
 const GEOAPIFY_KEY = '127ff7e3eabd4484b3db25a082ee6d62';
 const FOURSQUARE_KEY = 'fsq3fuXG1UpBrEPokg1hPjcotnEi1/1GNAzRBPRc7jqsJCk=';
+const GOOGLE_API_KEY = 'AIzaSyB58eeMbdhYPMCt3PLE0Fv75yLkj86Onj4';
+const GOOGLE_CX = 'a7bc6cf99bcc24a69';
 
 type Place = {
   id: string;
@@ -38,78 +45,78 @@ const DestinationsPage = () => {
 
   const baliRect = '114.432,-9.135,115.712,-8.045';
 
-useEffect(() => {
-  async function fetchPlaces() {
-    try {
-      setIsLoading(true);
+  useEffect(() => {
+    async function fetchPlaces() {
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `https://api.geoapify.com/v2/places?categories=natural,tourism.sights&filter=rect:${baliRect}&limit=500&apiKey=${GEOAPIFY_KEY}`
+        );
+        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+        const data = await response.json();
 
-      const response = await fetch(
-        `https://api.geoapify.com/v2/places?categories=natural,tourism.sights&filter=rect:${baliRect}&limit=500&apiKey=${GEOAPIFY_KEY}`
-      );
-      if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-      const data = await response.json();
+        const kabupatenList = [
+          "buleleng", "jembrana", "tabanan", "badung", "gianyar",
+          "bangli", "klungkung", "karangasem", "denpasar"
+        ];
 
-      const kabupatenList = [
-        "buleleng", "jembrana", "tabanan", "badung", "gianyar", "bangli", "klungkung", "karangasem", "denpasar"
-      ];
+        const seen = new Set();
+        const filteredPerKabupaten: any[] = [];
 
-      const seen = new Set(); // buat ngeilangin duplikat tempat wsatanya
-      const filteredPerKabupaten: any[] = [];
+        for (const kab of kabupatenList) {
+          const perKabupaten = data.features.filter((f: any) => {
+            const county = f.properties.county?.toLowerCase() || '';
+            const name = f.properties.name || '';
+            const lat = f.geometry.coordinates[1];
+            const lon = f.geometry.coordinates[0];
+            const idKey = `${name}-${lat}-${lon}`;
+            if (!name || !county.includes(kab)) return false;
+            if (seen.has(idKey)) return false;
+            seen.add(idKey);
+            return true;
+          }).slice(0, 20);
+          filteredPerKabupaten.push(...perKabupaten);
+        }
 
-      for (const kabupaten of kabupatenList) {
-        const perKabupaten = data.features.filter((f: any) => {
-          const county = f.properties.county?.toLowerCase() || '';
-          const name = f.properties.name || '';
-          const lat = f.geometry.coordinates[1];
-          const lon = f.geometry.coordinates[0];
-          const idKey = `${name}-${lat}-${lon}`;
+        const shuffled = filteredPerKabupaten
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 200);
 
-          if (!name || !county.includes(kabupaten)) return false;
-          if (seen.has(idKey)) return false;
-          seen.add(idKey);
-          return true;
-        }).slice(0, 20); // min 20 perkab
+        const rawPlaces = shuffled.map((f: any) => ({
+          id: f.properties.place_id || `place-${Math.random().toString(36).substring(2, 9)}`,
+          name: f.properties.name || f.properties.formatted || '',
+          location: f.properties.county?.toLowerCase() || 'bali',
+          lat: f.geometry.coordinates[1],
+          lon: f.geometry.coordinates[0],
+          distance: 'N/A',
+          category: f.properties.categories?.[0] || 'lainnya',
+        }));
 
-        filteredPerKabupaten.push(...perKabupaten);
+        const enriched = await Promise.all(rawPlaces.map(enrichPlace));
+        setPlaces(enriched);
+        sessionStorage.setItem("lastSearchPlaces", JSON.stringify(enriched));
+      } catch (err) {
+        console.error('Error fetching places:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load destinations');
+      } finally {
+        setIsLoading(false);
       }
+    }
 
-      // acak tempat wisatanya
-      const shuffledPlaces = filteredPerKabupaten
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 200); // max 200 tempat
+    fetchPlaces();
+  }, []);
 
-      // mini 180 data tpi datanya krg jdi gk kanggo
-      // if (shuffledPlaces.length < 180) {
-      //   const existingIds = new Set(shuffledPlaces.map((f: any) => f.properties.place_id));
-      //   const additional = filteredPerKabupaten.filter(
-      //     (f: any) => !existingIds.has(f.properties.place_id)
-      //   ).slice(0, 180 - shuffledPlaces.length);
-      //   shuffledPlaces = shuffledPlaces.concat(additional);
-      // }
-
-      const rawPlaces = shuffledPlaces.map((f: any) => ({
-        id: f.properties.place_id || `place-${Math.random().toString(36).substring(2, 9)}`,
-        name: f.properties.name || f.properties.formatted || '',
-        location: f.properties.county?.toLowerCase() || 'bali',
-        lat: f.geometry.coordinates[1],
-        lon: f.geometry.coordinates[0],
-        distance: 'N/A',
-        category: f.properties.categories?.[0] || 'lainnya',
-      }));
-
-      const enriched = await Promise.all(rawPlaces.map(enrichPlace));
-      setPlaces(enriched);
-      sessionStorage.setItem("lastSearchPlaces", JSON.stringify(enriched));
-    } catch (err) {
-      console.error('Error fetching places:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load destinations');
-    } finally {
-      setIsLoading(false);
+  async function fetchGoogleImage(query: string): Promise<string | null> {
+    try {
+      const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&cx=${GOOGLE_CX}&key=${GOOGLE_API_KEY}&searchType=image&num=1`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.items?.[0]?.link || null;
+    } catch (e) {
+      console.warn("Google CSE error:", e);
+      return null;
     }
   }
-
-  fetchPlaces();
-}, []);
 
   async function fetchFoursquareImage(name: string, lat: number, lon: number): Promise<string | null> {
     try {
@@ -148,14 +155,15 @@ useEffect(() => {
       const weather = `${mapWeatherCodeToDescription(weatherCode)}, ${temperature}°C`;
 
       const category = getCategoryByElevation(
-        place.category.includes('mountain') || place.category.includes('peak') ? 1000 :
-        place.category.includes('beach') || place.category.includes('water') ? 10 :
+        place.category.includes('mountain') ? 1000 :
+        place.category.includes('beach') ? 10 :
         500
       );
       const popularity = (4 + Math.random()).toFixed(1);
 
-      const image = await fetchFoursquareImage(place.name, place.lat, place.lon) ||
-        `https://source.unsplash.com/featured/?bali,${category.toLowerCase().replace(' ', ',')}`;
+      const image = await fetchFoursquareImage(place.name, place.lat, place.lon)
+        || await fetchGoogleImage(`${place.name} bali`)
+        || `https://source.unsplash.com/featured/?bali,${category}`;
 
       return {
         ...place,
@@ -187,98 +195,50 @@ useEffect(() => {
 
   if (isLoading) {
     return (
-      <div className="container py-16 flex flex-col items-center justify-center">
-        <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-lg">Memuat destinasi wisata...</p>
-      </div>
-    );
-  }
-
-  if (error && places.length === 0) {
-    return (
-      <div className="container py-16 flex flex-col items-center justify-center">
-        <div className="bg-red-100 text-red-800 p-4 rounded-lg">
-          <p>Error: {error}</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            Coba Lagi
-          </Button>
-        </div>
-      </div>
+      <div className="container py-16 text-center">Memuat destinasi wisata...</div>
     );
   }
 
   return (
     <div className="container py-8 max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tighter mb-2">Tempat Wisata di Bali</h1>
-        <p className="text-muted-foreground">Jelajahi keindahan alam Pulau Dewata</p>
-        <p className="text-sm text-muted-foreground mt-2">Menampilkan {places.length} destinasi</p>
-      </div>
+      <h1 className="text-3xl font-bold mb-4 text-center">Tempat Wisata di Bali</h1>
+      <p className="text-center text-sm text-muted-foreground mb-6">Menampilkan {places.length} destinasi</p>
 
-      <div>
-        {currentPlaces.map((place) => (
-          <Link href={`/destinations/${place.id}`} key={place.id}>
-            <Card className="overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-200 mb-6">
-              <div className="md:flex">
-                <div className="relative h-48 md:h-auto md:w-1/3">
-                  <Image src={place.image || '/placeholder.svg'} alt={place.name} fill className="object-cover" />
-                </div>
-                <CardContent className="p-6 md:w-2/3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-xl font-bold mb-1">{place.name}</h2>
-                      <div className="flex items-center text-sm text-muted-foreground mb-2">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        <span>{place.location}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400 mr-1" />
-                      <span className="font-medium">{place.popularity}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm mb-4">{place.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
-                      <CloudSun className="h-3 w-3 mr-1" />
-                      <span>{place.weather}</span>
-                    </div>
-                    <div className="flex items-center text-xs bg-muted px-2 py-1 rounded-full">
-                      <Activity className="h-3 w-3 mr-1" />
-                      <span>{place.category}</span>
-                    </div>
-                  </div>
-                </CardContent>
+      {currentPlaces.map((place) => (
+        <Link href={`/destinations/${place.id}`} key={place.id}>
+          <Card className="overflow-hidden mb-6 hover:shadow-lg transition">
+            <div className="md:flex">
+              <div className="relative h-48 md:h-auto md:w-1/3">
+                <Image src={place.image || '/placeholder.svg'} alt={place.name} fill className="object-cover" />
               </div>
-            </Card>
-          </Link>
-        ))}
-      </div>
+              <CardContent className="p-6 md:w-2/3">
+                <h2 className="text-xl font-bold">{place.name}</h2>
+                <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{place.location}</span>
+                </div>
+                <p className="text-sm mb-2">{place.description}</p>
+                <div className="flex gap-2 text-xs">
+                  <span className="flex items-center gap-1"><CloudSun className="h-3 w-3" />{place.weather}</span>
+                  <span className="flex items-center gap-1"><Activity className="h-3 w-3" />{place.category}</span>
+                </div>
+              </CardContent>
+            </div>
+          </Card>
+        </Link>
+      ))}
 
       {totalPages > 1 && (
         <Pagination className="mt-8">
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage > 1) paginate(currentPage - 1);
-                }}
-              />
+              <PaginationPrevious onClick={() => currentPage > 1 && paginate(currentPage - 1)} />
             </PaginationItem>
             {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((page) =>
-                page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)
-              )
               .map((page) => (
                 <PaginationItem key={page}>
                   <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      paginate(page);
-                    }}
+                    onClick={() => paginate(page)}
                     isActive={page === currentPage}
                   >
                     {page}
@@ -286,13 +246,7 @@ useEffect(() => {
                 </PaginationItem>
               ))}
             <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage < totalPages) paginate(currentPage + 1);
-                }}
-              />
+              <PaginationNext onClick={() => currentPage < totalPages && paginate(currentPage + 1)} />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

@@ -285,10 +285,6 @@ export default function ResultsPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400 mr-1" />
-                    <span className="font-medium">{destination.popularity.toFixed(1)}</span>
-                  </div>
                 </div>
 
                 <p className="text-sm mb-4">{destination.description}</p>
