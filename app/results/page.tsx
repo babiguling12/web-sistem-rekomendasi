@@ -6,7 +6,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Activity, Star, ArrowLeft, Thermometer } from "lucide-react"
-import Maps from "@/components/maps";
 
 
 interface Destination {
@@ -23,9 +22,9 @@ interface Destination {
   fitness_score?: number
   terrain_type: string
   time_preference: string
-  lat: number  // Add latitude
-  lon: number  // Add longitude
-  category?: string  // Add category for compatibility
+  lat: number 
+  lon: number 
+  category?: string  
 }
 
 interface RecommendationResult {
@@ -113,9 +112,9 @@ export default function ResultsPage() {
             fitness_score: d.fitness_score,
             terrain_type: d.tipe_dataran,
             time_preference: d.time_preference || "",
-            lat: d.lat || d.latitude || 0,  // Add latitude mapping
-            lon: d.lon || d.longitude || 0, // Add longitude mapping
-            category: d.kategori || d.category || d.kabupaten // Add category mapping
+            lat: d.lat || d.latitude || 0,  
+            lon: d.lon || d.longitude || 0, 
+            category: d.kategori || d.category || d.kabupaten 
           })),
           algorithm_info: data.algorithm_info
         }
