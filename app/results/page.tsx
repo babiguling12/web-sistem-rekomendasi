@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Activity, Star, ArrowLeft, Thermometer } from "lucide-react"
 
 interface Destination {
-  kode: string
+  id: string
   name: string
   location: string
   distance: number
@@ -47,21 +47,28 @@ export default function ResultsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const cachedResult = sessionStorage.getItem("gaResults")
+    const cachedAlgorithmInfo = sessionStorage.getItem("gaAlgorithmInfo")
     const storedParams = sessionStorage.getItem("recommendationParams")
+
     if (!storedParams) {
       window.location.href = "/recommendation"
       return
     }
 
+    if (cachedResult && cachedAlgorithmInfo) {
+      console.log("💾 Loaded from sessionStorage")
+      setResults({
+        destinations: JSON.parse(cachedResult),
+        algorithm_info: JSON.parse(cachedAlgorithmInfo),
+      });
+      setFormData(storedParams ? JSON.parse(storedParams) : null)
+      setIsLoading(false)
+      return
+    }
+
     const fetchResults = async () => {
       try {
-        const storedParams = sessionStorage.getItem("recommendationParams")
-        if (!storedParams) {
-          setError("Data preferensi tidak ditemukan")
-          setIsLoading(false)
-          return
-        }
-
         const params = JSON.parse(storedParams)
         setFormData(params)
 
@@ -82,7 +89,7 @@ export default function ResultsPage() {
 
         const fixedResults: RecommendationResult = {
           destinations: data.results.map((d: any) => ({
-            kode: d.kode,
+            id: d.kode,
             name: d.nama,
             location: d.kabupaten,
             distance: d.distance,
@@ -98,6 +105,24 @@ export default function ResultsPage() {
           })),
           algorithm_info: data.algorithm_info
         }
+
+        sessionStorage.setItem(
+          "gaResults",
+          JSON.stringify(fixedResults.destinations)
+        );
+
+        sessionStorage.setItem(
+          "gaAlgorithmInfo",
+          JSON.stringify(fixedResults.algorithm_info)
+        );
+
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const userCoords = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          };
+          sessionStorage.setItem("userCoordinates", JSON.stringify(userCoords));
+        });
 
         setResults(fixedResults)
       } catch (error) {
@@ -256,7 +281,7 @@ export default function ResultsPage() {
 
       <div className="space-y-6">
         {results.destinations.map((destination, index) => (
-          <Card key={destination.kode} className="overflow-hidden">
+          <Card key={destination.id} className="overflow-hidden">
             <div className="md:flex">
               <div className="relative h-48 md:h-auto md:w-1/3">
                 <Image
@@ -305,7 +330,7 @@ export default function ResultsPage() {
 
                 <div className="flex gap-2">
                   <Button size="sm" asChild>
-                    <Link href={`/destinations/${destination.kode}`}>Lihat Detail</Link>
+                    <Link href={`/destinations/${destination.id}?source=results`}>Lihat Detail</Link>
                   </Button>
                 </div>
               </CardContent>

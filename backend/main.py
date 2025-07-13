@@ -345,6 +345,42 @@ def recommend(data: Dict[str, Any]):
         print(f"❌ ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
+@app.get("/destinations")
+def get_destinations():
+    """
+    Mengambil semua destinasi dari database.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT d.kode, d.nama, d.latitude, d.longitude,
+                   td.tipe, ta.tipe, k.nama
+            FROM destinasi d
+            JOIN tipedataran td ON d.tipedataran_id = td.id
+            JOIN tipeaktivitas ta ON d.tipeaktivitas_id = ta.id
+            JOIN kabupaten k ON d.kabupaten_id = k.id
+        ''')
+        rows = cursor.fetchall()
+        destinations = []
+        for row in rows:
+            destinations.append({
+                "id": row[0],
+                "name": row[1],
+                "location": row[6],
+                "lat": row[2],
+                "lon": row[3],
+                "category": row[4],
+                "activity": row[5],
+                "description": f"{row[1]} di {row[6]} dengan kategori {row[4]}",
+                "image": "/placeholder.svg",  # Bisa update kalau ada kolom image
+                "popularity": round(3.5 + random.random(), 1),
+                "weather": "Cerah, 28°C",
+            })
+        return {"total": len(destinations), "results": destinations}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

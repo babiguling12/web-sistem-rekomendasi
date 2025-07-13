@@ -41,6 +41,12 @@ export default function RecommendationPage() {
   const [timeOfDay, setTimeOfDay] = useState("morning")
   const [activityLevel, setActivityLevel] = useState("relaxed")
 
+  useEffect(() => {
+    sessionStorage.removeItem("gaResults")
+    sessionStorage.removeItem("recommendationParams")
+    sessionStorage.removeItem("gaAlgorithmInfo")
+  }, [])
+
   const handleGetLocation = () => {
     setIsLocating(true)
     if (navigator.geolocation) {

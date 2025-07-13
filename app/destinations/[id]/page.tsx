@@ -3,32 +3,67 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, CloudSun, MapPin, Star, Activity } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { ChevronLeft, CloudSun, MapPin, Star, Activity} from 'lucide-react';
 
 const GoogleMap = dynamic(() => import('@/components/maps'), { ssr: false });
 
 export default function DestinationDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const source = searchParams.get('source') || 'all'; // default fallback
   const unwrappedParams = use(params);
   const [destination, setDestination] = useState<any>(null);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [similarPlaces, setSimilarPlaces] = useState<any[]>([]);
   const [showMap, setShowMap] = useState(false);
 
+  function displayDistance(value: any) {
+    if (typeof value === 'number') {
+      return value.toFixed(1) + ' km';
+    }
+    if (value) {
+      return value;
+    }
+    return 'N/A';
+  }
+
   useEffect(() => {
-    const allPlaces = sessionStorage.getItem('lastSearchPlaces');
     const coords = sessionStorage.getItem('userCoordinates');
 
     if (coords) setUserCoords(JSON.parse(coords));
-    if (allPlaces) {
-      const parsed = JSON.parse(allPlaces);
-      const dest = parsed.find((p: any) => p.id === unwrappedParams.id);
+
+    let parsed: any[] = [];
+    if (source == 'results') {
+      parsed = JSON.parse(sessionStorage.getItem('gaResults') || '[]');
+    } else {
+      parsed = JSON.parse(sessionStorage.getItem('allDestinations') || '[]');
+    }
+    
+    const dest = parsed.find((d: any) => d.id == unwrappedParams.id);
+    if (dest) {
       setDestination(dest);
-      const filtered = parsed.filter((p: any) => p.category === dest?.category && p.id !== dest?.id).slice(0, 4);
-      setSimilarPlaces(filtered);
+
+      let filtered = parsed.filter(
+        (p: any) =>
+          p.terrain_type === dest.terrain_type &&
+          p.id !== dest.id
+      )
+
+      if (filtered.length == 0) {
+        filtered = parsed.filter(
+          (p: any) =>
+            p.location === dest.category &&
+            p.id !== dest.id
+        )
+      }
+      setSimilarPlaces(filtered.slice(0, 4));
     }
   }, [unwrappedParams.id]);
+  
 
   if (!destination) {
     return (
@@ -65,7 +100,9 @@ export default function DestinationDetail({ params }: { params: Promise<{ id: st
             destinationLocation={{ lat: destination.lat, lng: destination.lon }}
           />
         ) : (
-          <img src={destination.image} alt={destination.name} className="w-full h-full object-cover" />
+          <div className="relative w-full h-full">
+            <Image src={destination.image} alt={destination.name} fill className="object-cover" />
+          </div>
         )}
       </div>
 
@@ -73,7 +110,7 @@ export default function DestinationDetail({ params }: { params: Promise<{ id: st
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm text-gray-700 flex items-center">
           <MapPin className="inline h-4 w-4 mr-1 text-rose-500" />
-          {destination.location} • {destination.distance}
+          {destination.location} • {displayDistance(destination.distance)}
         </div>
         <div className="flex items-center text-yellow-500 text-base font-medium">
           <Star className="h-5 w-5 mr-1 fill-yellow-400 stroke-yellow-400" />
@@ -89,7 +126,7 @@ export default function DestinationDetail({ params }: { params: Promise<{ id: st
         </span>
         <span className="bg-green-50 text-green-800 px-3 py-1 rounded-lg text-xs flex items-center gap-1">
           <Activity className="inline w-4 h-4" />
-          Santai
+          {destination.activityLevel}
         </span>
       </div>
 
@@ -103,22 +140,25 @@ export default function DestinationDetail({ params }: { params: Promise<{ id: st
           <h2 className="text-xl font-semibold mb-6">Destinasi Wisata Serupa</h2>
           <div className="flex gap-4 overflow-x-auto pb-2">
             {similarPlaces.map((place) => (
-              <a
+              <Link
                 key={place.id}
                 href={`/destinations/${place.id}`}
                 className="min-w-[220px] max-w-[220px] bg-white border rounded-xl overflow-hidden shadow hover:shadow-lg transition flex-shrink-0"
                 style={{ scrollSnapAlign: 'start' }}
               >
-                <img
-                  src={place.image}
-                  alt={place.name}
-                  className="h-32 w-full object-cover"
-                />
+                <div className="relative w-full h-32">
+                  <Image
+                    src={place.image || "/placeholder.svg"}
+                    alt={place.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-base mb-1">{place.name}</h3>
                   <div className="flex items-center text-xs text-muted-foreground mb-1">
                     <MapPin className="inline w-3 h-3 mr-1" />
-                    {place.location} • {place.distance}
+                    {place.location} • {displayDistance(place.distance)}
                   </div>
                   <div className="flex items-center text-yellow-500 text-xs mb-1">
                     <Star className="h-4 w-4 mr-1 fill-yellow-400 stroke-yellow-400" />
@@ -126,7 +166,7 @@ export default function DestinationDetail({ params }: { params: Promise<{ id: st
                   </div>
                   <p className="text-xs text-gray-700 line-clamp-2">{place.description}</p>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
