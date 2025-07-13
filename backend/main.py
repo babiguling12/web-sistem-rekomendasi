@@ -128,7 +128,7 @@ def fitness_function(destination, preferences):
         weather_score = 1
     total_score += weather_score * 3
 
-    # Skor maksimum total: 4*1 + 4*1 + 4*1 + 4*2 + 4*4 + 4*3 = 52
+    # Skor maksimum total: 4*1 + 4*1 + 4*1 + 4*2 + 4*4 + 4*3 = 48
     max_score = 4*1 + 4*1 + 4*1 + 4*2 + 4*4 + 4*3
     normalized_score = total_score / max_score
     return round(normalized_score, 3)
@@ -272,7 +272,7 @@ def recommend(data: Dict[str, Any]):
         cursor = conn.cursor()
 
         cursor.execute('''
-            SELECT d.kode, d.nama, d.latitude, d.longitude, td.tipe, ta.tipe, k.nama, 4.5
+            SELECT d.kode, d.nama, d.latitude, d.longitude, td.tipe, ta.tipe, k.nama, 0
             FROM destinasi d
             JOIN tipedataran td ON d.tipedataran_id = td.id
             JOIN tipeaktivitas ta ON d.tipeaktivitas_id = ta.id
