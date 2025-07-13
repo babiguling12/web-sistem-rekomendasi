@@ -275,6 +275,12 @@ const DestinationsPage = () => {
           </PaginationContent>
         </Pagination>
       )}
+      {/* Button untuk kembali ke halaman sebelumnya */}
+      <div className="mt-6 text-center">
+        <Button variant="outline" onClick={() => router.back()}>
+          Kembali
+        </Button>
+      </div>
     </div>
   );
 };
