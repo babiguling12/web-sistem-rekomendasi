@@ -50,6 +50,7 @@ export default function ResultsPage() {
     const cachedResult = sessionStorage.getItem("gaResults")
     const cachedAlgorithmInfo = sessionStorage.getItem("gaAlgorithmInfo")
     const storedParams = sessionStorage.getItem("recommendationParams")
+    const storedCoordinates = sessionStorage.getItem("userCoordinates")
 
     if (!storedParams) {
       window.location.href = "/recommendation"
@@ -69,7 +70,12 @@ export default function ResultsPage() {
 
     const fetchResults = async () => {
       try {
-        const params = JSON.parse(storedParams)
+        const params = {
+          ...JSON.parse(storedParams || '{}'),
+          latitude: storedCoordinates ? JSON.parse(storedCoordinates).lat : null,
+          longitude: storedCoordinates ? JSON.parse(storedCoordinates).lng : null
+        }
+        // console.log("📦 Params sent to API:", params)  // Debug: pastikan ini berisi lat/lng user
         setFormData(params)
 
         const response = await fetch("http://localhost:8000/recommend", {
@@ -115,14 +121,6 @@ export default function ResultsPage() {
           "gaAlgorithmInfo",
           JSON.stringify(fixedResults.algorithm_info)
         );
-
-        navigator.geolocation.getCurrentPosition((pos) => {
-          const userCoords = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          };
-          sessionStorage.setItem("userCoordinates", JSON.stringify(userCoords));
-        });
 
         setResults(fixedResults)
       } catch (error) {

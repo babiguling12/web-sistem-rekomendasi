@@ -62,6 +62,10 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 def fitness_function(destination, preferences):
     total_score = 0
 
+     # Cetak preferensi dan destinasi yang dicek
+    # print("🗂️ PREF:", preferences)
+    # print("📍 DEST:", destination)
+
     # Lokasi harus cocok, jika tidak langsung diskualifikasi
     if destination["kabupaten"].lower() != preferences["district"].lower():
         return 0
