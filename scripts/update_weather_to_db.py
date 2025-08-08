@@ -87,6 +87,7 @@ import psycopg2
 import aiohttp
 import asyncio
 from datetime import datetime
+from zoneinfo import ZoneInfo  # Python 3.9+
 
 # Konfigurasi koneksi PostgreSQL
 DB_CONFIG = {
@@ -106,7 +107,7 @@ def interpret_weathercode(code, temps):
         return "Hujan"
 
 async def fetch_weather(session, lat, lon):
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,weathercode&timezone=Asia/Bangkok"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,weathercode&timezone=Asia/Makassar"
     try:
         async with session.get(url, timeout=10) as resp:
             data = await resp.json()
@@ -115,8 +116,9 @@ async def fetch_weather(session, lat, lon):
             temps = data["hourly"]["temperature_2m"]
             
             result = {}
+            now = datetime.now(ZoneInfo("Asia/Makassar"))  # waktu lokal WITA
             for hour in ["06:00", "12:00", "18:00"]:
-                target_time = datetime.now().strftime("%Y-%m-%dT") + hour
+                target_time = now.strftime("%Y-%m-%dT") + hour
                 if target_time in times:
                     idx = times.index(target_time)
                     temp = temps[idx]
@@ -153,7 +155,7 @@ async def process_destinasi(session, dest, today, cache):
 async def update_weather_async():
     conn = psycopg2.connect(**DB_CONFIG)
     cursor = conn.cursor()
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(ZoneInfo("Asia/Makassar")).strftime("%Y-%m-%d")
 
     # Hapus data lama
     cursor.execute("DELETE FROM waktureal WHERE tanggal = %s", (today,))
