@@ -22,14 +22,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Path ke database
-DB_PATH = os.path.join(os.path.dirname(__file__), "rekomendasi_wisata.db")
+# # Path ke database
+# DB_PATH = os.path.join(os.path.dirname(__file__), "rekomendasi_wisata.db")
 
 # Ambil koneksi database (menggunakan pengecekan jika file tidak ditemukan)
 def get_db_connection():
-    if not os.path.exists(DB_PATH):
-        raise HTTPException(status_code=500, detail="Database not found.")
-    return sqlite3.connect(DB_PATH)
+    DATABASE_URL = "postgresql://postgres:brLwNtkGPeciXAnaJURvwlEQTLbQQXNy@shinkansen.proxy.rlwy.net:38183/railway"
+    conn = psycopg2.connect(DATABASE_URL)
+    return conn
+
 
 # Ambil kondisi cuaca real dari tabel waktureal berdasarkan kode destinasi dan waktu (pagi/siang/sore)
 def get_real_weather_from_db(kode_destinasi, time_of_day):
@@ -37,8 +38,7 @@ def get_real_weather_from_db(kode_destinasi, time_of_day):
     jeniswaktu_id = time_map.get(time_of_day)
     today = datetime.now().strftime("%Y-%m-%d")
 
-    # conn = get_db_connection()
-    conn = psycopg2.connect("postgresql://postgres:brLwNtkGPeciXAnaJURvwlEQTLbQQXNy@shinkansen.proxy.rlwy.net:38183/railway")
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT kondisi, temperature FROM waktureal
