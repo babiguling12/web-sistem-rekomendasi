@@ -81,11 +81,11 @@ from datetime import datetime
 
 # Konfigurasi koneksi PostgreSQL
 DB_CONFIG = {
-    "host": "postgres.railway.internal",
+    "host": "shinkansen.proxy.rlwy.net",
     "dbname": "railway",
     "user": "postgres",
     "password": "brLwNtkGPeciXAnaJURvwlEQTLbQQXNy",
-    "port": 5432
+    "port": 38183
 }
 
 def interpret_weathercode(code, temps):
