@@ -8,6 +8,7 @@ import random
 import math
 from datetime import datetime
 import requests
+import psycopg2
 
 
 app = FastAPI(title="Wisata Bali Recommendation API", version="1.0.0")
@@ -36,7 +37,8 @@ def get_real_weather_from_db(kode_destinasi, time_of_day):
     jeniswaktu_id = time_map.get(time_of_day)
     today = datetime.now().strftime("%Y-%m-%d")
 
-    conn = get_db_connection()
+    # conn = get_db_connection()
+    conn = psycopg2.connect("postgresql://postgres:brLwNtkGPeciXAnaJURvwlEQTLbQQXNy@shinkansen.proxy.rlwy.net:38183/railway")
     cursor = conn.cursor()
     cursor.execute("""
         SELECT kondisi, temperature FROM waktureal
