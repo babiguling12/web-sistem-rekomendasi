@@ -2,7 +2,7 @@ import sqlite3
 import requests
 from datetime import datetime
 
-DB_PATH = "../backend/rekomendasi_wisata.db"
+DB_PATH = "backend/rekomendasi_wisata.db"
 
 def interpret_weathercode(code, temps):
     if code == 0:
