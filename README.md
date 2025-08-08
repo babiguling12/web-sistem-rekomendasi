@@ -1,5 +1,5 @@
-# [![Typing SVG](https://readme-typing-svg.herokuapp.com?size=22&color=FFFF&lines=Web+Sistem+Rekomendasi;Payu+Melali)](https://git.io/typing-svg)
-(Deskripsi)
+# [![Typing SVG](https://readme-typing-svg.herokuapp.com?size=22&color=FFFF&lines=Web+Sistem+Rekomendasi;Payu+Melali)](https://git.io/typing-svg) 
+> Aplikasi ini membantu wisatawan menemukan destinasi wisata alam di Bali yang sesuai dengan preferensi mereka, seperti jenis dataran (tinggi, rendah, atau perairan), waktu liburan, dan tingkat aktivitas fisik. Sistem ini akan memanfaatkan Algoritma Genetika untuk melakukan pencocokan dan optimasi rekomendasi berdasarkan data dari Geoapify dan cuaca dari Open-Meteo.
 ## 🛠️ Instalasi
 1. Clone Payu Melali
 ```bash
