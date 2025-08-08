@@ -81,7 +81,7 @@ export default function DestinationDetail({ params }: { params: Promise<{ id: st
 
       {/* Kategori tags */}
       <div className="flex justify-center gap-2 mb-4">
-        <span className="bg-gray-100 rounded-full px-3 py-1 text-xs font-medium">{destination.category}</span>
+        <span className="bg-gray-100 rounded-full px-3 py-1 text-xs font-medium">{destination.terrain_type}</span>
         {/* Tambahkan tag lain jika ada */}
       </div>
 
