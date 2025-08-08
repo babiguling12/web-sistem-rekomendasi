@@ -72,7 +72,7 @@ const DestinationsPage = () => {
 
       // Kalau belum ada cache, fetch dari backend
       console.log("🌐 Fetching from API");
-      const response = await fetch('http://localhost:8000/destinations');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/destinations`);
       if (!response.ok) throw new Error(`API error: ${response.status}`);
       const data = await response.json();
 

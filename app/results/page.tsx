@@ -82,7 +82,7 @@ export default function ResultsPage() {
         // console.log("📦 Params sent to API:", params)  // Debug: pastikan ini berisi lat/lng user
         setFormData(params)
 
-        const response = await fetch("http://localhost:8000/recommend", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recommend`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
