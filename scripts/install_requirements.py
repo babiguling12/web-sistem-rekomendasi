@@ -7,8 +7,10 @@ def install_requirements():
     print("🔧 Installing required packages...")
     
     # Get the backend directory path
-    backend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend")
-    requirements_file = os.path.join(backend_dir, "requirements.txt")
+    # backend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend")
+    # requirements_file = os.path.join(backend_dir, "requirements.txt")
+    requirements_file = "requirements.txt"
+    
     
     if not os.path.exists(requirements_file):
         print("❌ requirements.txt not found!")
