@@ -1,1 +1,1 @@
-cron: python update_weather_to_db.py
+cron: python update_weather_to_db.py && date
