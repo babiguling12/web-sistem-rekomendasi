@@ -42,8 +42,9 @@ def get_real_weather_from_db(kode_destinasi, time_of_day):
     cursor = conn.cursor()
     cursor.execute("""
         SELECT kondisi, temperature FROM waktureal
-        WHERE tanggal = ? AND jeniswaktu_id = ? AND destinasi_kode = ?
+        WHERE tanggal = %s AND jeniswaktu_id = %s AND destinasi_kode = %s
     """, (today, jeniswaktu_id, kode_destinasi))
+
     row = cursor.fetchone()
     conn.close()
     return {
