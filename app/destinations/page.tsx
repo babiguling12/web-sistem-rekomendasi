@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -16,7 +16,6 @@ import {
   PaginationNext,
   PaginationPrevious
 } from '@/components/ui/pagination';
-import React from 'react';
 
 const GEOAPIFY_KEY = '127ff7e3eabd4484b3db25a082ee6d62';
 const FOURSQUARE_KEY = 'fsq3fuXG1UpBrEPokg1hPjcotnEi1/1GNAzRBPRc7jqsJCk=';
@@ -38,7 +37,15 @@ type Place = {
   activityLevel: string;
 };
 
-const DestinationsPage = () => {
+export default function DestinationsPageWrapper() {
+  return (
+    <Suspense fallback={<div className="container py-16 text-center">Loading destinations...</div>}>
+      <DestinationsPage />
+    </Suspense>
+  );
+}
+
+function DestinationsPage() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,63 +54,57 @@ const DestinationsPage = () => {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   useEffect(() => {
     const pageParam = searchParams.get('page');
     if (pageParam) {
       setCurrentPage(parseInt(pageParam));
     }
   }, [searchParams]);
- 
-  const baliRect = '114.432,-9.135,115.712,-8.045';
 
-   useEffect(() => {
-  async function fetchDestinations() {
-    try {
-      setIsLoading(true);
+  useEffect(() => {
+    async function fetchDestinations() {
+      try {
+        setIsLoading(true);
 
-      // Cek apakah ada cache di sessionStorage
-      const cached = sessionStorage.getItem("allDestinations");
-      if (cached) {
-        console.log("💾 Loaded from sessionStorage");
-        setPlaces(JSON.parse(cached));
-        return; // Hentikan, tidak perlu fetch lagi
+        const cached = sessionStorage.getItem('allDestinations');
+        if (cached) {
+          console.log('💾 Loaded from sessionStorage');
+          setPlaces(JSON.parse(cached));
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('🌐 Fetching from API');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/destinations`);
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        const data = await response.json();
+
+        const rawPlaces = data.results.map((item: any) => ({
+          id: item.id || item.kode || `id-${Math.random().toString(36).substring(2, 9)}`,
+          name: item.name || item.nama,
+          location: item.location || item.kabupaten || 'Bali',
+          lat: item.lat || item.latitude,
+          lon: item.lon || item.longitude,
+          distance: 'N/A',
+          category: item.category || 'Wisata',
+          activityLevel: item.activity || 'relaxed',
+        }));
+
+        const enriched = await Promise.all(rawPlaces.map(enrichPlace));
+
+        setPlaces(enriched);
+        sessionStorage.setItem('allDestinations', JSON.stringify(enriched));
+      } catch (err) {
+        console.error('Error fetching destinations:', err);
+        setError(err instanceof Error ? err.message : 'Gagal memuat destinasi.');
+      } finally {
+        setIsLoading(false);
       }
-
-      // Kalau belum ada cache, fetch dari backend
-      console.log("🌐 Fetching from API");
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/destinations`);
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
-      const data = await response.json();
-
-      const rawPlaces = data.results.map((item: any) => ({
-        id: item.id || item.kode || `id-${Math.random().toString(36).substring(2, 9)}`,
-        name: item.name || item.nama,
-        location: item.location || item.kabupaten || 'Bali',
-        lat: item.lat || item.latitude,
-        lon: item.lon || item.longitude,
-        distance: 'N/A',
-        category: item.category || 'Wisata',
-        activityLevel: item.activity || 'relaxed',
-      }));
-
-      // Enrich datanya
-      const enriched = await Promise.all(rawPlaces.map(enrichPlace));
-
-      // Simpan ke state & cache
-      setPlaces(enriched);
-      sessionStorage.setItem("allDestinations", JSON.stringify(enriched));
-    } catch (err) {
-      console.error('Error fetching destinations:', err);
-      setError(err instanceof Error ? err.message : 'Gagal memuat destinasi.');
-    } finally {
-      setIsLoading(false);
     }
-  }
 
-  fetchDestinations();
-}, []);
-
+    fetchDestinations();
+  }, []);
 
   async function fetchGoogleImage(query: string): Promise<string | null> {
     try {
@@ -112,7 +113,7 @@ const DestinationsPage = () => {
       const data = await res.json();
       return data.items?.[0]?.link || null;
     } catch (e) {
-      console.warn("Google CSE error:", e);
+      console.warn('Google CSE error:', e);
       return null;
     }
   }
@@ -155,9 +156,10 @@ const DestinationsPage = () => {
 
       const popularity = (4 + Math.random()).toFixed(1);
 
-      const image = await fetchFoursquareImage(place.name, place.lat, place.lon)
-        || await fetchGoogleImage(`${place.name} bali`)
-        || `https://source.unsplash.com/featured/?bali,${place.category}`;
+      const image =
+        (await fetchFoursquareImage(place.name, place.lat, place.lon)) ||
+        (await fetchGoogleImage(`${place.name} bali`)) ||
+        `https://source.unsplash.com/featured/?bali,${place.category}`;
 
       return {
         ...place,
@@ -178,7 +180,6 @@ const DestinationsPage = () => {
     }
   }
 
-  // === Pagination logic ===
   const indexOfLastPlace = currentPage * placesPerPage;
   const indexOfFirstPlace = indexOfLastPlace - placesPerPage;
   const currentPlaces = places.slice(indexOfFirstPlace, indexOfLastPlace);
@@ -187,7 +188,7 @@ const DestinationsPage = () => {
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     router.push(`?page=${pageNumber}`);
-  }
+  };
 
   if (isLoading) return <div className="container py-16 text-center">Memuat destinasi wisata...</div>;
   if (error) return <div className="container py-16 text-center text-red-600">{error}</div>;
@@ -213,8 +214,14 @@ const DestinationsPage = () => {
                 </div>
                 <p className="text-sm mb-2">{place.description}</p>
                 <div className="flex gap-2 text-xs">
-                  <span className="flex items-center gap-1"><CloudSun className="h-3 w-3" />{place.weather}</span>
-                  <span className="flex items-center gap-1"><Activity className="h-3 w-3" />{place.activityLevel}</span>
+                  <span className="flex items-center gap-1">
+                    <CloudSun className="h-3 w-3" />
+                    {place.weather}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Activity className="h-3 w-3" />
+                    {place.activityLevel}
+                  </span>
                 </div>
               </CardContent>
             </div>
@@ -229,14 +236,14 @@ const DestinationsPage = () => {
               <PaginationPrevious
                 onClick={() => currentPage > 1 && paginate(currentPage - 1)}
                 className={`px-3 py-1 border rounded-md ${
-                  currentPage === 1 ? "pointer-events-none opacity-50" : "hover:bg-gray-100"
+                  currentPage === 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'
                 }`}
               />
             </PaginationItem>
 
-            {/* === Windowed pagination === */}
+            {/* Windowed pagination */}
             {(() => {
-              const windowSize = 5; // tampilkan max 5 nomor
+              const windowSize = 5; // max 5 nomor
               let startPage = Math.max(1, currentPage - Math.floor(windowSize / 2));
               let endPage = startPage + windowSize - 1;
 
@@ -252,7 +259,7 @@ const DestinationsPage = () => {
                     <PaginationLink
                       onClick={() => paginate(page)}
                       className={`px-3 py-1 border rounded-md cursor-pointer ${
-                        page === currentPage ? "bg-primary text-white" : "hover:bg-gray-100"
+                        page === currentPage ? 'bg-primary text-white' : 'hover:bg-gray-100'
                       }`}
                     >
                       {page}
@@ -268,14 +275,14 @@ const DestinationsPage = () => {
               <PaginationNext
                 onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
                 className={`px-3 py-1 border rounded-md ${
-                  currentPage === totalPages ? "pointer-events-none opacity-50" : "hover:bg-gray-100"
+                  currentPage === totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'
                 }`}
               />
             </PaginationItem>
           </PaginationContent>
         </Pagination>
       )}
-      {/* Button untuk kembali ke halaman sebelumnya */}
+
       <div className="mt-6 text-center">
         <Button variant="outline" onClick={() => router.back()}>
           Kembali
@@ -283,6 +290,4 @@ const DestinationsPage = () => {
       </div>
     </div>
   );
-};
-
-export default DestinationsPage;
+}
