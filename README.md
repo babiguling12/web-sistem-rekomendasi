@@ -1,10 +1,22 @@
-# web-sistem-rekomendasi
-
-# ~ ~ HOW TO RUN ~ ~
-# 1. Open Terminal
-# 2. run "python scripts/install_requirements.py" utk menginstall keperluan lib
-# 3. run "python scripts/debug_json.py" utk menyesuaikan format json dgn db
-# 4. run "python scripts/load_data_smart.py" utk load data json ke db
-# 5. run "python scripts/update_weather_to_db.py" utk reload data weather terbaru ke dalam db
-# 6. run "cd backend" utk masuk ke folder backend dan run "python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload" untuk menjalankan server FastApi (api relasi backend ~ frontend)
-# 7. run "npm run dev" untuk menjalankan program sepenuhnya
+# [![Typing SVG](https://readme-typing-svg.herokuapp.com?size=22&color=FFFF&lines=Web+Sistem+Rekomendasi;Payu+Melali)](https://git.io/typing-svg)
+(Deskripsi)
+## 🛠️ Instalasi
+1. Clone Payu Melali
+```bash
+git clone https://github.com/babiguling12/web-sistem-rekomendas
+```
+2. Jalankan Script Py
+```bash
+python scripts/install_requirements.py
+python scripts/debug_json.py
+python scripts/load_data_smart.py
+python scripts/update_weather_to_db.py
+```
+3. Jalankan Backend
+```bash
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+```
+4. Jalankan Frontend
+```bash
+npm run dev
+```
